@@ -1,0 +1,17 @@
+[run]
+branch = True
+source = app
+omit =
+    app/db/migrations/*
+    app/models/*
+    app/db/init_db.py
+    app/tasks/*
+    app/seed/*
+    app/schemas/*
+    app/main.py
+
+[report]
+show_missing = True
+skip_covered = False
+exclude_lines =
+    pragma: no cover

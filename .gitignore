@@ -1,0 +1,55 @@
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+.idea/
+.vscode/
+
+# Python artifacts
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.log
+*.tmp
+*.bak
+*.orig
+*.swp
+*.swo
+*.pid
+
+# Packaging / wheels
+*.egg
+*.egg-info/
+*.whl
+
+# Coverage & reports
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+reports/
+pytest-report.html
+report.html
+
+# Databases and journals
+*.db
+*.db-journal
+*.sqlite3
+*.sqlite3.env
+
+# OS junk
+.DS_Store
+
+# Env files
+.env
+
+# Uploads (keep placeholder)
+app/static/uploads/*
+!app/static/uploads/.gitkeep
+uploads/
+test_uploads/
+temp/

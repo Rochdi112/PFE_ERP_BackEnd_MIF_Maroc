@@ -1,0 +1,98 @@
+{
+  "info": {
+    "name": "ERP Interventions API Contract",
+    "version": "1.0.0",
+    "basePaths": ["/api/v1", "/"],
+    "notes": "Routes auth/users/techniciens aussi montées à la racine pour compatibilité tests."
+  },
+  "auth": {
+    "type": "bearer",
+    "tokenUrl": "/api/v1/auth/token",
+    "response": {"access_token": "string", "token_type": "bearer"}
+  },
+  "enums": {
+    "UserRole": ["admin", "responsable", "technicien", "client"],
+    "InterventionType": ["corrective", "preventive"],
+    "StatutIntervention": ["ouverte", "affectee", "en_cours", "en_attente", "cloturee", "archivee"],
+    "PrioriteIntervention": ["urgente", "haute", "normale", "basse", "programmee"]
+  },
+  "endpoints": [
+    {
+      "method": "POST",
+      "path": "/auth/token",
+      "auth": {"required": false},
+      "request": {"contentType": "multipart/form-data", "fields": {"email": "string", "password": "string"}},
+      "response": {"status": 200, "schemaRef": "TokenResponse"},
+      "notes": "Aussi disponible sous /api/v1/auth/token"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/login",
+      "auth": {"required": false},
+      "request": {"contentType": "multipart/form-data", "fields": {"username": "string", "password": "string"}},
+      "response": {"status": 200, "schemaRef": "TokenResponse"}
+    },
+    {"method": "GET", "path": "/auth/me", "auth": {"required": true}, "response": {"status": 200, "schemaRef": "UserOut"}},
+
+    {"method": "POST", "path": "/users/", "auth": {"roles": ["admin"]}, "request": {"json": "UserCreate"}, "response": {"status": 201, "schemaRef": "UserOut"}},
+    {"method": "GET", "path": "/users/", "auth": {"roles": ["admin"]}, "response": {"status": 200, "arrayOf": "UserOut"}},
+    {"method": "GET", "path": "/users/{id}", "auth": {"roles": ["admin"]}, "params": {"path": {"id": "number"}}, "response": {"status": 200, "schemaRef": "UserOut"}},
+    {"method": "DELETE", "path": "/users/{id}", "auth": {"roles": ["admin"]}, "params": {"path": {"id": "number"}}, "response": {"status": 204}},
+    {"method": "PATCH", "path": "/users/{id}/activate", "auth": {"roles": ["admin"]}, "params": {"path": {"id": "number"}}, "response": {"status": 200, "schemaRef": "UserOut"}},
+    {"method": "GET", "path": "/users/me", "auth": {"required": true}, "response": {"status": 200, "schemaRef": "UserOut"}},
+    {"method": "PUT", "path": "/users/update", "auth": {"required": true}, "request": {"json": "UserUpdate"}, "response": {"status": 200, "schemaRef": "UserOut"}},
+
+    {"method": "POST", "path": "/techniciens/", "auth": {"roles": ["responsable"]}, "request": {"json": "TechnicienCreate"}, "response": {"status": 200, "schemaRef": "TechnicienOut"}},
+    {"method": "GET", "path": "/techniciens/", "auth": {"required": true}, "response": {"status": 200, "arrayOf": "TechnicienOut"}},
+    {"method": "GET", "path": "/techniciens/{id}", "auth": {"required": true}, "params": {"path": {"id": "number"}}, "response": {"status": 200, "schemaRef": "TechnicienOut"}},
+    {"method": "POST", "path": "/techniciens/competences", "auth": {"roles": ["responsable"]}, "request": {"json": "CompetenceCreate"}, "response": {"status": 200, "schemaRef": "CompetenceOut"}},
+    {"method": "GET", "path": "/techniciens/competences", "auth": {"required": true}, "response": {"status": 200, "arrayOf": "CompetenceOut"}},
+
+    {"method": "POST", "path": "/equipements/", "auth": {"roles": ["responsable"]}, "request": {"json": "EquipementCreate"}, "response": {"status": 200, "schemaRef": "EquipementOut"}},
+    {"method": "GET", "path": "/equipements/", "auth": {"required": false}, "response": {"status": 200, "arrayOf": "EquipementOut"}},
+    {"method": "GET", "path": "/equipements/{id}", "auth": {"required": false}, "params": {"path": {"id": "number"}}, "response": {"status": 200, "schemaRef": "EquipementOut"}},
+    {"method": "DELETE", "path": "/equipements/{id}", "auth": {"roles": ["responsable"]}, "params": {"path": {"id": "number"}}, "response": {"status": 200}},
+
+    {"method": "POST", "path": "/interventions/", "auth": {"roles": ["responsable"]}, "request": {"json": "InterventionCreate"}, "response": {"status": 200, "schemaRef": "InterventionOut"}},
+    {"method": "GET", "path": "/interventions/", "auth": {"required": true}, "response": {"status": 200, "arrayOf": "InterventionOut"}},
+    {"method": "GET", "path": "/interventions/{id}", "auth": {"required": true}, "params": {"path": {"id": "number"}}, "response": {"status": 200, "schemaRef": "InterventionOut"}},
+    {"method": "PATCH", "path": "/interventions/{id}/statut", "auth": {"roles": ["technicien"]}, "params": {"path": {"id": "number"}, "query": {"statut": "StatutIntervention", "remarque": "string?"}}, "response": {"status": 200, "schemaRef": "InterventionOut"}},
+
+    {"method": "POST", "path": "/planning/", "auth": {"roles": ["admin", "responsable"]}, "request": {"json": "PlanningCreate"}, "response": {"status": 201, "schemaRef": "PlanningOut"}},
+    {"method": "GET", "path": "/planning/", "auth": {"required": true}, "response": {"status": 200, "arrayOf": "PlanningOut"}},
+    {"method": "GET", "path": "/planning/{id}", "auth": {"required": true}, "params": {"path": {"id": "number"}}, "response": {"status": 200, "schemaRef": "PlanningOut"}},
+    {"method": "PATCH", "path": "/planning/{id}/dates", "auth": {"roles": ["responsable"]}, "params": {"path": {"id": "number"}}, "request": {"queryOrBody": {"nouvelle_date": "datetime"}}, "response": {"status": 200, "schemaRef": "PlanningOut"}},
+    {"method": "PUT", "path": "/planning/{id}", "auth": {"roles": ["admin", "responsable"]}, "request": {"json": {"frequence": "string"}}, "response": {"status": 200, "schemaRef": "PlanningOut"}},
+    {"method": "DELETE", "path": "/planning/{id}", "auth": {"roles": ["admin", "responsable"]}, "params": {"path": {"id": "number"}}, "response": {"status": 204}},
+
+    {"method": "POST", "path": "/documents/", "auth": {"roles": ["admin"]}, "request": {"multipart": {"file": "binary"}, "query": {"intervention_id": "number"}}, "response": {"status": 201, "schemaRef": "DocumentOut"}},
+    {"method": "POST", "path": "/documents/upload", "auth": {"roles": ["admin"]}, "request": {"multipart": {"file": "binary"}, "query": {"intervention_id": "number"}}, "response": {"status": 201, "schemaRef": "DocumentOut"}},
+    {"method": "GET", "path": "/documents/", "auth": {"roles": ["admin"]}, "response": {"status": 200, "arrayOf": "DocumentOut"}},
+    {"method": "GET", "path": "/documents/{intervention_id}", "auth": {"roles": ["admin"]}, "params": {"path": {"intervention_id": "number"}}, "response": {"status": 200, "arrayOf": "DocumentOut"}},
+
+    {"method": "GET", "path": "/filters/interventions", "auth": {"required": true}, "params": {"query": {"statut": "StatutIntervention?", "urgence": "boolean?", "type": "InterventionType?", "technicien_id": "number?"}}, "response": {"status": 200, "arrayOf": "InterventionOut"}}
+  ],
+  "schemas": {
+    "TokenResponse": {"access_token": "string", "token_type": "bearer"},
+    "UserCreate": {"username": "string", "full_name": "string", "email": "string", "role": "UserRole", "password": "string"},
+    "UserUpdate": {"full_name": "string?", "password": "string?"},
+    "UserOut": {"id": "number", "username": "string", "full_name": "string", "email": "string", "role": "UserRole", "is_active": "boolean", "created_at": "datetime?", "updated_at": "datetime?"},
+    "CompetenceCreate": {"nom": "string"},
+    "CompetenceOut": {"id": "number", "nom": "string"},
+    "TechnicienCreate": {"user_id": "number", "equipe": "string?", "disponibilite": "string?", "competences_ids": "number[]?"},
+    "TechnicienOut": {"id": "number", "user": "UserOut", "competences": "CompetenceOut[]", "equipe": "string?", "disponibilite": "string?"},
+    "EquipementCreate": {"nom": "string", "type": "string", "localisation": "string", "frequence_entretien": "string?"},
+    "EquipementOut": {"id": "number", "nom": "string", "type": "string", "localisation": "string", "frequence_entretien": "string?"},
+    "InterventionCreate": {"titre": "string", "description": "string?", "type": "InterventionType", "statut": "StatutIntervention?", "priorite": "PrioriteIntervention?", "urgence": "boolean?", "date_limite": "datetime?", "technicien_id": "number?", "equipement_id": "number"},
+    "InterventionOut": {"id": "number", "titre": "string", "description": "string?", "type": "InterventionType", "statut": "StatutIntervention", "priorite": "PrioriteIntervention", "urgence": "boolean", "date_creation": "datetime", "date_limite": "datetime?", "date_cloture": "datetime?", "technicien_id": "number?", "equipement_id": "number?"},
+    "PlanningCreate": {"frequence": "string", "prochaine_date": "datetime?", "derniere_date": "datetime?", "equipement_id": "number"},
+    "PlanningOut": {"id": "number", "frequence": "string", "prochaine_date": "datetime?", "derniere_date": "datetime?", "equipement_id": "number", "date_creation": "datetime"},
+    "DocumentOut": {"id": "number", "filename": "string", "path": "string", "date_upload": "datetime", "intervention_id": "number"}
+  },
+  "ignoreExtras": [
+    {"method": "POST", "path": "/notifications"},
+    {"method": "GET", "path": "/notifications"},
+    {"method": "GET", "path": "/notifications/user/{id}"},
+    {"method": "DELETE", "path": "/notifications/{id}"}
+  ]
+}

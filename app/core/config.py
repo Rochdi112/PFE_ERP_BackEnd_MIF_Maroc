@@ -1,0 +1,61 @@
+# app/core/config.py
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field, field_validator
+from typing import List
+
+
+class Settings(BaseSettings):
+    PROJECT_NAME: str = "ERP Interventions"
+    API_V1_STR: str = "/api/v1"
+
+    # Security
+    SECRET_KEY: str = Field(default="insecure-test-secret-key")
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # durée de validité JWT en minutes
+
+    # Email SMTP
+    SMTP_HOST: str = Field(default="localhost")
+    SMTP_PORT: int = Field(default=1025)  # Mailhog/Mailcatcher default
+    SMTP_USER: str = Field(default="user")
+    SMTP_PASSWORD: str = Field(default="password")
+    EMAILS_FROM_EMAIL: str = Field(default="no-reply@example.com")
+
+    # Base de données PostgreSQL
+    POSTGRES_DB: str = Field(default="erp_db")
+    POSTGRES_USER: str = Field(default="erp_user")
+    POSTGRES_PASSWORD: str = Field(default="erp_pass")
+    POSTGRES_HOST: str = Field(default="db")
+    POSTGRES_PORT: int = Field(default=5432)
+
+    # Répertoire d’upload de fichiers
+    UPLOAD_DIRECTORY: str = Field(default="app/static/uploads")
+
+    # CORS
+    CORS_ALLOW_ORIGINS: List[str] = Field(default_factory=lambda: [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:8000",
+    ])
+
+    # Scheduler toggle
+    ENABLE_SCHEDULER: bool = Field(default=False)
+
+    # Logging
+    LOG_LEVEL: str = Field(default="INFO")
+    def DATABASE_URL(self) -> str:
+        return (
+            f"postgresql+psycopg2://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
+            f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        )
+
+    # Pydantic v2 settings configuration
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",  # accepte des variables supplémentaires sans lever d'erreur
+    )
+
+
+settings = Settings()

@@ -1,0 +1,4862 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ERP Interventions",
+    "description": "Backend ERP pour la gestion des interventions industrielles",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/auth/token": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Connexion utilisateur",
+        "description": "Authentifie un utilisateur avec email + mot de passe. Retourne un token JWT si valide.",
+        "operationId": "login_api_v1_auth_token_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_login_api_v1_auth_token_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Connexion utilisateur (username/password)",
+        "description": "Authentifie un utilisateur avec username + mot de passe. Retourne un token JWT si valide.",
+        "operationId": "login_username_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_login_username_api_v1_auth_login_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Informations de l'utilisateur courant",
+        "description": "Retourne les infos du profil de l'utilisateur connecté, à partir du JWT envoyé dans le header.",
+        "operationId": "get_me_api_v1_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/": {
+      "get": {
+        "tags": [
+          "utilisateurs"
+        ],
+        "summary": "Lister tous les utilisateurs",
+        "description": "Liste complète des utilisateurs (réservé à l’administrateur).",
+        "operationId": "list_users_api_v1_users__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UserOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Users Api V1 Users  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Utilisateur non trouvé"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "utilisateurs"
+        ],
+        "summary": "Créer un utilisateur",
+        "description": "Création d’un nouvel utilisateur (réservé à l’administrateur uniquement).",
+        "operationId": "create_new_user_api_v1_users__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Utilisateur non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/me": {
+      "get": {
+        "tags": [
+          "utilisateurs"
+        ],
+        "summary": "Voir son profil",
+        "description": "Retourne le profil de l'utilisateur connecté.",
+        "operationId": "get_my_profile_api_v1_users_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Utilisateur non trouvé"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/update": {
+      "put": {
+        "tags": [
+          "utilisateurs"
+        ],
+        "summary": "Modifier son profil",
+        "description": "Permet à l'utilisateur connecté de mettre à jour son profil.",
+        "operationId": "update_my_profile_api_v1_users_update_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Utilisateur non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/users/{user_id}": {
+      "get": {
+        "tags": [
+          "utilisateurs"
+        ],
+        "summary": "Lire un utilisateur par ID",
+        "description": "Retourne un utilisateur par son ID. Accès réservé à l’administrateur.",
+        "operationId": "read_user_api_v1_users__user_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Utilisateur non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "utilisateurs"
+        ],
+        "summary": "Désactiver un utilisateur",
+        "description": "Soft delete (désactivation) utilisateur par l’admin.",
+        "operationId": "disable_user_api_v1_users__user_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Utilisateur non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{user_id}/activate": {
+      "patch": {
+        "tags": [
+          "utilisateurs"
+        ],
+        "summary": "Réactiver un utilisateur",
+        "description": "Réactive un utilisateur désactivé (admin uniquement).",
+        "operationId": "activate_user_api_v1_users__user_id__activate_patch",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Utilisateur non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/techniciens/": {
+      "get": {
+        "tags": [
+          "techniciens"
+        ],
+        "summary": "Lister les techniciens",
+        "description": "Liste tous les techniciens.",
+        "operationId": "list_techniciens_api_v1_techniciens__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TechnicienOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Techniciens Api V1 Techniciens  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Technicien ou compétence introuvable"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "techniciens"
+        ],
+        "summary": "Créer un technicien",
+        "description": "Crée un nouveau technicien (réservé aux responsables).",
+        "operationId": "create_new_technicien_api_v1_techniciens__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TechnicienCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicienOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Technicien ou compétence introuvable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/techniciens/competences": {
+      "get": {
+        "tags": [
+          "techniciens"
+        ],
+        "summary": "Lister les compétences",
+        "description": "Liste toutes les compétences.",
+        "operationId": "list_competences_api_v1_techniciens_competences_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CompetenceOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Competences Api V1 Techniciens Competences Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Technicien ou compétence introuvable"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "techniciens"
+        ],
+        "summary": "Créer une compétence",
+        "description": "Crée une nouvelle compétence (réservé aux responsables).",
+        "operationId": "create_new_competence_api_v1_techniciens_competences_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompetenceCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompetenceOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Technicien ou compétence introuvable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/techniciens/{technicien_id}": {
+      "get": {
+        "tags": [
+          "techniciens"
+        ],
+        "summary": "Détail d’un technicien",
+        "description": "Récupère le détail d’un technicien par ID.",
+        "operationId": "get_technicien_api_v1_techniciens__technicien_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "technicien_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Technicien Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicienOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Technicien ou compétence introuvable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/equipements/": {
+      "get": {
+        "tags": [
+          "equipements"
+        ],
+        "summary": "Lister les équipements",
+        "description": "Liste tous les équipements.",
+        "operationId": "list_equipements_api_v1_equipements__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EquipementOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Equipements Api V1 Equipements  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Équipement non trouvé"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "equipements"
+        ],
+        "summary": "Créer un équipement",
+        "description": "Crée un nouvel équipement (Accès : responsable).",
+        "operationId": "create_new_equipement_api_v1_equipements__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EquipementCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipementOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Équipement non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/equipements/{equipement_id}": {
+      "get": {
+        "tags": [
+          "equipements"
+        ],
+        "summary": "Détail d’un équipement",
+        "description": "Récupère le détail d'un équipement par son ID.",
+        "operationId": "get_equipement_api_v1_equipements__equipement_id__get",
+        "parameters": [
+          {
+            "name": "equipement_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Equipement Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipementOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Équipement non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "equipements"
+        ],
+        "summary": "Supprimer un équipement",
+        "description": "Supprime un équipement par ID (Accès : responsable).",
+        "operationId": "delete_equipement_by_id_api_v1_equipements__equipement_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "equipement_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Equipement Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Équipement non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/interventions/": {
+      "get": {
+        "tags": [
+          "interventions"
+        ],
+        "summary": "Lister les interventions",
+        "description": "Retourne toutes les interventions du système (authentification requise)",
+        "operationId": "list_interventions_api_v1_interventions__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InterventionOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Interventions Api V1 Interventions  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Intervention non trouvée"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "interventions"
+        ],
+        "summary": "Créer une intervention",
+        "description": "Crée une intervention préventive ou corrective. (admin, responsable uniquement)",
+        "operationId": "create_new_intervention_api_v1_interventions__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InterventionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterventionOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Intervention non trouvée"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/interventions/{intervention_id}": {
+      "get": {
+        "tags": [
+          "interventions"
+        ],
+        "summary": "Détail d’une intervention",
+        "description": "Récupère les détails d’une intervention par ID (authentification requise)",
+        "operationId": "get_intervention_api_v1_interventions__intervention_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "intervention_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Intervention Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterventionOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Intervention non trouvée"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/interventions/{intervention_id}/statut": {
+      "patch": {
+        "tags": [
+          "interventions"
+        ],
+        "summary": "Changer le statut d’une intervention",
+        "description": "Met à jour le statut (cycle de vie) de l’intervention. Action historisée avec l’utilisateur en cours.",
+        "operationId": "change_statut_intervention_api_v1_interventions__intervention_id__statut_patch",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "intervention_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Intervention Id"
+            }
+          },
+          {
+            "name": "statut",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/app__schemas__intervention__StatutIntervention"
+            }
+          },
+          {
+            "name": "remarque",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Remarque"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterventionOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Intervention non trouvée"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/planning/": {
+      "get": {
+        "tags": [
+          "planning"
+        ],
+        "summary": "Lister les plannings",
+        "description": "Liste tous les plannings existants (lecture ouverte aux utilisateurs connectés).",
+        "operationId": "list_all_plannings_api_v1_planning__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlanningOut"
+                  },
+                  "type": "array",
+                  "title": "Response List All Plannings Api V1 Planning  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Planning non trouvé"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "planning"
+        ],
+        "summary": "Créer un planning préventif",
+        "description": "Crée un planning d’entretien pour un équipement donné. (responsable/admin uniquement)",
+        "operationId": "create_new_planning_api_v1_planning__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Planning non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/planning/{planning_id}": {
+      "get": {
+        "tags": [
+          "planning"
+        ],
+        "summary": "Détail d’un planning",
+        "description": "Récupère les informations d’un planning par ID.",
+        "operationId": "get_planning_api_v1_planning__planning_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planning_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Planning Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Planning non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "planning"
+        ],
+        "summary": "Mettre à jour un planning",
+        "operationId": "update_planning_api_v1_planning__planning_id__put",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planning_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Planning Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Planning non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "planning"
+        ],
+        "summary": "Supprimer un planning",
+        "operationId": "delete_planning_endpoint_api_v1_planning__planning_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planning_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Planning Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Planning non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/planning/{planning_id}/dates": {
+      "patch": {
+        "tags": [
+          "planning"
+        ],
+        "summary": "Mettre à jour la prochaine date d’un planning",
+        "description": "Permet de replanifier la prochaine date de maintenance. (responsable uniquement)",
+        "operationId": "update_planning_next_date_api_v1_planning__planning_id__dates_patch",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planning_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Planning Id"
+            }
+          },
+          {
+            "name": "nouvelle_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "Nouvelle Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Planning non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/": {
+      "post": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Créer une notification",
+        "description": "Crée une notification par email ou log pour une intervention (admin/responsable uniquement).",
+        "operationId": "create_new_notification_api_v1_notifications__post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Notification non trouvée"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Lister les notifications",
+        "description": "Retourne toutes les notifications envoyées (admin/responsable uniquement).",
+        "operationId": "list_notifications_api_v1_notifications__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "intervention_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Intervention Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NotificationOut"
+                  },
+                  "title": "Response List Notifications Api V1 Notifications  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Notification non trouvée"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/user/{user_id}": {
+      "get": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Lister les notifications d'un utilisateur",
+        "operationId": "list_notifications_by_user_api_v1_notifications_user__user_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NotificationOut"
+                  },
+                  "title": "Response List Notifications By User Api V1 Notifications User  User Id  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Notification non trouvée"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/{notification_id}": {
+      "delete": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Supprimer une notification",
+        "operationId": "delete_notification_api_v1_notifications__notification_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "notification_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Notification Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Notification non trouvée"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documents/": {
+      "post": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Uploader un document",
+        "description": "Upload d’un fichier lié à une intervention (photo, rapport, preuve, etc.).",
+        "operationId": "upload_document_api_v1_documents__post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "intervention_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Intervention Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_document_api_v1_documents__post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Document non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Lister tous les documents",
+        "description": "Accès à la liste de tous les documents liés aux interventions (admin/responsable uniquement).",
+        "operationId": "list_documents_api_v1_documents__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DocumentOut"
+                  },
+                  "title": "Response List Documents Api V1 Documents  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Document non trouvé"
+          }
+        }
+      }
+    },
+    "/api/v1/documents/upload": {
+      "post": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Uploader un document (alias)",
+        "operationId": "upload_document_alias_api_v1_documents_upload_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "intervention_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Intervention Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_document_alias_api_v1_documents_upload_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Document non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/documents/{intervention_id}": {
+      "get": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Lister les documents d'une intervention",
+        "operationId": "list_documents_by_intervention_api_v1_documents__intervention_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "intervention_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Intervention Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DocumentOut"
+                  },
+                  "title": "Response List Documents By Intervention Api V1 Documents  Intervention Id  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Document non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/filters/interventions": {
+      "get": {
+        "tags": [
+          "filtres"
+        ],
+        "summary": "Recherche filtrée d’interventions",
+        "description": "Recherche avancée sur les interventions par statut, urgence, type ou technicien.",
+        "operationId": "filter_interventions_api_v1_filters_interventions_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "statut",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/app__models__intervention__StatutIntervention"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Statut de l’intervention",
+              "title": "Statut"
+            },
+            "description": "Statut de l’intervention"
+          },
+          {
+            "name": "urgence",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filtrer par urgence (True/False)",
+              "title": "Urgence"
+            },
+            "description": "Filtrer par urgence (True/False)"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/app__models__intervention__InterventionType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Type d’intervention",
+              "title": "Type"
+            },
+            "description": "Type d’intervention"
+          },
+          {
+            "name": "technicien_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ID du technicien affecté",
+              "title": "Technicien Id"
+            },
+            "description": "ID du technicien affecté"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InterventionOut"
+                  },
+                  "title": "Response Filter Interventions Api V1 Filters Interventions Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Aucune intervention trouvée"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/token": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Connexion utilisateur",
+        "description": "Authentifie un utilisateur avec email + mot de passe. Retourne un token JWT si valide.",
+        "operationId": "login_auth_token_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_login_auth_token_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Connexion utilisateur (username/password)",
+        "description": "Authentifie un utilisateur avec username + mot de passe. Retourne un token JWT si valide.",
+        "operationId": "login_username_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_login_username_auth_login_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Informations de l'utilisateur courant",
+        "description": "Retourne les infos du profil de l'utilisateur connecté, à partir du JWT envoyé dans le header.",
+        "operationId": "get_me_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/users/": {
+      "get": {
+        "tags": [
+          "utilisateurs"
+        ],
+        "summary": "Lister tous les utilisateurs",
+        "description": "Liste complète des utilisateurs (réservé à l’administrateur).",
+        "operationId": "list_users_users__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UserOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Users Users  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Utilisateur non trouvé"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "utilisateurs"
+        ],
+        "summary": "Créer un utilisateur",
+        "description": "Création d’un nouvel utilisateur (réservé à l’administrateur uniquement).",
+        "operationId": "create_new_user_users__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Utilisateur non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/users/me": {
+      "get": {
+        "tags": [
+          "utilisateurs"
+        ],
+        "summary": "Voir son profil",
+        "description": "Retourne le profil de l'utilisateur connecté.",
+        "operationId": "get_my_profile_users_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Utilisateur non trouvé"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/users/update": {
+      "put": {
+        "tags": [
+          "utilisateurs"
+        ],
+        "summary": "Modifier son profil",
+        "description": "Permet à l'utilisateur connecté de mettre à jour son profil.",
+        "operationId": "update_my_profile_users_update_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Utilisateur non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/users/{user_id}": {
+      "get": {
+        "tags": [
+          "utilisateurs"
+        ],
+        "summary": "Lire un utilisateur par ID",
+        "description": "Retourne un utilisateur par son ID. Accès réservé à l’administrateur.",
+        "operationId": "read_user_users__user_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Utilisateur non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "utilisateurs"
+        ],
+        "summary": "Désactiver un utilisateur",
+        "description": "Soft delete (désactivation) utilisateur par l’admin.",
+        "operationId": "disable_user_users__user_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Utilisateur non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{user_id}/activate": {
+      "patch": {
+        "tags": [
+          "utilisateurs"
+        ],
+        "summary": "Réactiver un utilisateur",
+        "description": "Réactive un utilisateur désactivé (admin uniquement).",
+        "operationId": "activate_user_users__user_id__activate_patch",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Utilisateur non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/techniciens/": {
+      "get": {
+        "tags": [
+          "techniciens"
+        ],
+        "summary": "Lister les techniciens",
+        "description": "Liste tous les techniciens.",
+        "operationId": "list_techniciens_techniciens__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TechnicienOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Techniciens Techniciens  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Technicien ou compétence introuvable"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "techniciens"
+        ],
+        "summary": "Créer un technicien",
+        "description": "Crée un nouveau technicien (réservé aux responsables).",
+        "operationId": "create_new_technicien_techniciens__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TechnicienCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicienOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Technicien ou compétence introuvable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/techniciens/competences": {
+      "get": {
+        "tags": [
+          "techniciens"
+        ],
+        "summary": "Lister les compétences",
+        "description": "Liste toutes les compétences.",
+        "operationId": "list_competences_techniciens_competences_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CompetenceOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Competences Techniciens Competences Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Technicien ou compétence introuvable"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "techniciens"
+        ],
+        "summary": "Créer une compétence",
+        "description": "Crée une nouvelle compétence (réservé aux responsables).",
+        "operationId": "create_new_competence_techniciens_competences_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompetenceCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompetenceOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Technicien ou compétence introuvable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/techniciens/{technicien_id}": {
+      "get": {
+        "tags": [
+          "techniciens"
+        ],
+        "summary": "Détail d’un technicien",
+        "description": "Récupère le détail d’un technicien par ID.",
+        "operationId": "get_technicien_techniciens__technicien_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "technicien_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Technicien Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicienOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Technicien ou compétence introuvable"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/equipements/": {
+      "get": {
+        "tags": [
+          "equipements"
+        ],
+        "summary": "Lister les équipements",
+        "description": "Liste tous les équipements.",
+        "operationId": "list_equipements_equipements__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EquipementOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Equipements Equipements  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Équipement non trouvé"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "equipements"
+        ],
+        "summary": "Créer un équipement",
+        "description": "Crée un nouvel équipement (Accès : responsable).",
+        "operationId": "create_new_equipement_equipements__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EquipementCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipementOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Équipement non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/equipements/{equipement_id}": {
+      "get": {
+        "tags": [
+          "equipements"
+        ],
+        "summary": "Détail d’un équipement",
+        "description": "Récupère le détail d'un équipement par son ID.",
+        "operationId": "get_equipement_equipements__equipement_id__get",
+        "parameters": [
+          {
+            "name": "equipement_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Equipement Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EquipementOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Équipement non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "equipements"
+        ],
+        "summary": "Supprimer un équipement",
+        "description": "Supprime un équipement par ID (Accès : responsable).",
+        "operationId": "delete_equipement_by_id_equipements__equipement_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "equipement_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Equipement Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Équipement non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/interventions/": {
+      "get": {
+        "tags": [
+          "interventions"
+        ],
+        "summary": "Lister les interventions",
+        "description": "Retourne toutes les interventions du système (authentification requise)",
+        "operationId": "list_interventions_interventions__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InterventionOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Interventions Interventions  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Intervention non trouvée"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "interventions"
+        ],
+        "summary": "Créer une intervention",
+        "description": "Crée une intervention préventive ou corrective. (admin, responsable uniquement)",
+        "operationId": "create_new_intervention_interventions__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InterventionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterventionOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Intervention non trouvée"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/interventions/{intervention_id}": {
+      "get": {
+        "tags": [
+          "interventions"
+        ],
+        "summary": "Détail d’une intervention",
+        "description": "Récupère les détails d’une intervention par ID (authentification requise)",
+        "operationId": "get_intervention_interventions__intervention_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "intervention_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Intervention Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterventionOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Intervention non trouvée"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/interventions/{intervention_id}/statut": {
+      "patch": {
+        "tags": [
+          "interventions"
+        ],
+        "summary": "Changer le statut d’une intervention",
+        "description": "Met à jour le statut (cycle de vie) de l’intervention. Action historisée avec l’utilisateur en cours.",
+        "operationId": "change_statut_intervention_interventions__intervention_id__statut_patch",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "intervention_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Intervention Id"
+            }
+          },
+          {
+            "name": "statut",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/app__schemas__intervention__StatutIntervention"
+            }
+          },
+          {
+            "name": "remarque",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Remarque"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterventionOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Intervention non trouvée"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/planning/": {
+      "get": {
+        "tags": [
+          "planning"
+        ],
+        "summary": "Lister les plannings",
+        "description": "Liste tous les plannings existants (lecture ouverte aux utilisateurs connectés).",
+        "operationId": "list_all_plannings_planning__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlanningOut"
+                  },
+                  "type": "array",
+                  "title": "Response List All Plannings Planning  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Planning non trouvé"
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "planning"
+        ],
+        "summary": "Créer un planning préventif",
+        "description": "Crée un planning d’entretien pour un équipement donné. (responsable/admin uniquement)",
+        "operationId": "create_new_planning_planning__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanningCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Planning non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ]
+      }
+    },
+    "/planning/{planning_id}": {
+      "get": {
+        "tags": [
+          "planning"
+        ],
+        "summary": "Détail d’un planning",
+        "description": "Récupère les informations d’un planning par ID.",
+        "operationId": "get_planning_planning__planning_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planning_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Planning Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Planning non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "planning"
+        ],
+        "summary": "Mettre à jour un planning",
+        "operationId": "update_planning_planning__planning_id__put",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planning_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Planning Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Planning non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "planning"
+        ],
+        "summary": "Supprimer un planning",
+        "operationId": "delete_planning_endpoint_planning__planning_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planning_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Planning Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "404": {
+            "description": "Planning non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/planning/{planning_id}/dates": {
+      "patch": {
+        "tags": [
+          "planning"
+        ],
+        "summary": "Mettre à jour la prochaine date d’un planning",
+        "description": "Permet de replanifier la prochaine date de maintenance. (responsable uniquement)",
+        "operationId": "update_planning_next_date_planning__planning_id__dates_patch",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planning_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Planning Id"
+            }
+          },
+          {
+            "name": "nouvelle_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "title": "Nouvelle Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Planning non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/": {
+      "post": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Créer une notification",
+        "description": "Crée une notification par email ou log pour une intervention (admin/responsable uniquement).",
+        "operationId": "create_new_notification_notifications__post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NotificationCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Notification non trouvée"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Lister les notifications",
+        "description": "Retourne toutes les notifications envoyées (admin/responsable uniquement).",
+        "operationId": "list_notifications_notifications__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "intervention_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Intervention Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NotificationOut"
+                  },
+                  "title": "Response List Notifications Notifications  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Notification non trouvée"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/user/{user_id}": {
+      "get": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Lister les notifications d'un utilisateur",
+        "operationId": "list_notifications_by_user_notifications_user__user_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NotificationOut"
+                  },
+                  "title": "Response List Notifications By User Notifications User  User Id  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Notification non trouvée"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/notifications/{notification_id}": {
+      "delete": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "Supprimer une notification",
+        "operationId": "delete_notification_notifications__notification_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "notification_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Notification Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Notification non trouvée"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/": {
+      "post": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Uploader un document",
+        "description": "Upload d’un fichier lié à une intervention (photo, rapport, preuve, etc.).",
+        "operationId": "upload_document_documents__post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "intervention_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Intervention Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_document_documents__post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Document non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Lister tous les documents",
+        "description": "Accès à la liste de tous les documents liés aux interventions (admin/responsable uniquement).",
+        "operationId": "list_documents_documents__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DocumentOut"
+                  },
+                  "title": "Response List Documents Documents  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Document non trouvé"
+          }
+        }
+      }
+    },
+    "/documents/upload": {
+      "post": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Uploader un document (alias)",
+        "operationId": "upload_document_alias_documents_upload_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "intervention_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Intervention Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_document_alias_documents_upload_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Document non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/{intervention_id}": {
+      "get": {
+        "tags": [
+          "documents"
+        ],
+        "summary": "Lister les documents d'une intervention",
+        "operationId": "list_documents_by_intervention_documents__intervention_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "intervention_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Intervention Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DocumentOut"
+                  },
+                  "title": "Response List Documents By Intervention Documents  Intervention Id  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Document non trouvé"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/filters/interventions": {
+      "get": {
+        "tags": [
+          "filtres"
+        ],
+        "summary": "Recherche filtrée d’interventions",
+        "description": "Recherche avancée sur les interventions par statut, urgence, type ou technicien.",
+        "operationId": "filter_interventions_filters_interventions_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "statut",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/app__models__intervention__StatutIntervention"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Statut de l’intervention",
+              "title": "Statut"
+            },
+            "description": "Statut de l’intervention"
+          },
+          {
+            "name": "urgence",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filtrer par urgence (True/False)",
+              "title": "Urgence"
+            },
+            "description": "Filtrer par urgence (True/False)"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/app__models__intervention__InterventionType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Type d’intervention",
+              "title": "Type"
+            },
+            "description": "Type d’intervention"
+          },
+          {
+            "name": "technicien_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ID du technicien affecté",
+              "title": "Technicien Id"
+            },
+            "description": "ID du technicien affecté"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InterventionOut"
+                  },
+                  "title": "Response Filter Interventions Filters Interventions Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Aucune intervention trouvée"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Read Root",
+        "operationId": "read_root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_login_api_v1_auth_token_post": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "Body_login_api_v1_auth_token_post"
+      },
+      "Body_login_auth_token_post": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "Body_login_auth_token_post"
+      },
+      "Body_login_username_api_v1_auth_login_post": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "Body_login_username_api_v1_auth_login_post"
+      },
+      "Body_login_username_auth_login_post": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "Body_login_username_auth_login_post"
+      },
+      "Body_upload_document_alias_api_v1_documents_upload_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_document_alias_api_v1_documents_upload_post"
+      },
+      "Body_upload_document_alias_documents_upload_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_document_alias_documents_upload_post"
+      },
+      "Body_upload_document_api_v1_documents__post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_document_api_v1_documents__post"
+      },
+      "Body_upload_document_documents__post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_document_documents__post"
+      },
+      "CompetenceCreate": {
+        "properties": {
+          "nom": {
+            "type": "string",
+            "title": "Nom"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nom"
+        ],
+        "title": "CompetenceCreate",
+        "description": "Données nécessaires à la création d'une compétence."
+      },
+      "CompetenceOut": {
+        "properties": {
+          "nom": {
+            "type": "string",
+            "title": "Nom"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nom",
+          "id"
+        ],
+        "title": "CompetenceOut",
+        "description": "Schéma utilisé en sortie API (inclut l'id)."
+      },
+      "DocumentOut": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "date_upload": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Date Upload"
+          },
+          "intervention_id": {
+            "type": "integer",
+            "title": "Intervention Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "path",
+          "id",
+          "date_upload",
+          "intervention_id"
+        ],
+        "title": "DocumentOut",
+        "description": "Schéma renvoyé par l'API pour un document :\n- Contient les métadonnées complètes"
+      },
+      "EquipementCreate": {
+        "properties": {
+          "nom": {
+            "type": "string",
+            "title": "Nom"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "localisation": {
+            "type": "string",
+            "title": "Localisation"
+          },
+          "frequence_entretien": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Frequence Entretien"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nom",
+          "type",
+          "localisation"
+        ],
+        "title": "EquipementCreate"
+      },
+      "EquipementOut": {
+        "properties": {
+          "nom": {
+            "type": "string",
+            "title": "Nom"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "localisation": {
+            "type": "string",
+            "title": "Localisation"
+          },
+          "frequence_entretien": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Frequence Entretien"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "nom",
+          "type",
+          "localisation",
+          "id"
+        ],
+        "title": "EquipementOut"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "InterventionCreate": {
+        "properties": {
+          "titre": {
+            "type": "string",
+            "title": "Titre"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "type": {
+            "$ref": "#/components/schemas/app__schemas__intervention__InterventionType"
+          },
+          "statut": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/app__schemas__intervention__StatutIntervention"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "ouverte"
+          },
+          "priorite": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrioriteIntervention"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "normale"
+          },
+          "urgence": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Urgence",
+            "default": false
+          },
+          "date_limite": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Limite"
+          },
+          "technicien_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Technicien Id"
+          },
+          "equipement_id": {
+            "type": "integer",
+            "title": "Equipement Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "titre",
+          "type",
+          "equipement_id"
+        ],
+        "title": "InterventionCreate"
+      },
+      "InterventionOut": {
+        "properties": {
+          "titre": {
+            "type": "string",
+            "title": "Titre"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "type": {
+            "$ref": "#/components/schemas/InterventionType-Output"
+          },
+          "statut": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StatutIntervention-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "ouverte"
+          },
+          "priorite": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PrioriteIntervention"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "normale"
+          },
+          "urgence": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Urgence",
+            "default": false
+          },
+          "date_limite": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Limite"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "date_creation": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Date Creation"
+          },
+          "date_cloture": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date Cloture"
+          },
+          "technicien_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Technicien Id"
+          },
+          "equipement_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Equipement Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "titre",
+          "type",
+          "id",
+          "date_creation",
+          "technicien_id"
+        ],
+        "title": "InterventionOut"
+      },
+      "InterventionType-Output": {
+        "type": "string",
+        "enum": [
+          "corrective",
+          "preventive"
+        ],
+        "title": "InterventionType"
+      },
+      "NotificationCreate": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "canal": {
+            "type": "string",
+            "title": "Canal"
+          },
+          "contenu": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contenu"
+          },
+          "intervention_id": {
+            "type": "integer",
+            "title": "Intervention Id"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "canal",
+          "intervention_id",
+          "user_id"
+        ],
+        "title": "NotificationCreate",
+        "description": "Schéma pour création d’une notification liée à une intervention et un utilisateur"
+      },
+      "NotificationOut": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "canal": {
+            "type": "string",
+            "title": "Canal"
+          },
+          "contenu": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contenu"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "date_envoi": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Date Envoi"
+          },
+          "intervention_id": {
+            "type": "integer",
+            "title": "Intervention Id"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "canal",
+          "id",
+          "date_envoi",
+          "intervention_id",
+          "user_id"
+        ],
+        "title": "NotificationOut",
+        "description": "Schéma renvoyé par l’API avec métadonnées :\n- date d’envoi, ids liés"
+      },
+      "PlanningCreate": {
+        "properties": {
+          "frequence": {
+            "type": "string",
+            "title": "Frequence"
+          },
+          "prochaine_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prochaine Date"
+          },
+          "derniere_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Derniere Date"
+          },
+          "equipement_id": {
+            "type": "integer",
+            "title": "Equipement Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "frequence",
+          "equipement_id"
+        ],
+        "title": "PlanningCreate",
+        "description": "Schéma utilisé lors de la création d’un planning :\n- nécessite un `equipement_id`"
+      },
+      "PlanningOut": {
+        "properties": {
+          "frequence": {
+            "type": "string",
+            "title": "Frequence"
+          },
+          "prochaine_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prochaine Date"
+          },
+          "derniere_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Derniere Date"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "equipement_id": {
+            "type": "integer",
+            "title": "Equipement Id"
+          },
+          "date_creation": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Date Creation"
+          }
+        },
+        "type": "object",
+        "required": [
+          "frequence",
+          "id",
+          "equipement_id",
+          "date_creation"
+        ],
+        "title": "PlanningOut",
+        "description": "Schéma renvoyé par l’API pour lecture d’un planning :\n- inclut ID, équipement et date de création"
+      },
+      "PrioriteIntervention": {
+        "type": "string",
+        "enum": [
+          "urgente",
+          "haute",
+          "normale",
+          "basse",
+          "programmee"
+        ],
+        "title": "PrioriteIntervention"
+      },
+      "StatutIntervention-Output": {
+        "type": "string",
+        "enum": [
+          "ouverte",
+          "affectee",
+          "en_cours",
+          "en_attente",
+          "cloturee",
+          "archivee"
+        ],
+        "title": "StatutIntervention"
+      },
+      "TechnicienCreate": {
+        "properties": {
+          "equipe": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Equipe"
+          },
+          "disponibilite": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disponibilite"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id"
+          },
+          "competences_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Competences Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "user_id"
+        ],
+        "title": "TechnicienCreate",
+        "description": "Payload attendu pour créer un technicien."
+      },
+      "TechnicienOut": {
+        "properties": {
+          "equipe": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Equipe"
+          },
+          "disponibilite": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disponibilite"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserOut"
+          },
+          "competences": {
+            "items": {
+              "$ref": "#/components/schemas/CompetenceOut"
+            },
+            "type": "array",
+            "title": "Competences",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "user"
+        ],
+        "title": "TechnicienOut",
+        "description": "Données retournées pour un technicien (lecture/detail)."
+      },
+      "TokenResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "default": "bearer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token"
+        ],
+        "title": "TokenResponse",
+        "description": "Réponse retournée après login :\n- access_token : JWT signé\n- token_type : 'bearer'"
+      },
+      "UserCreate": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "full_name",
+          "email",
+          "role",
+          "password"
+        ],
+        "title": "UserCreate",
+        "description": "Données nécessaires pour créer un nouvel utilisateur :\n- hérite de UserBase\n- ajoute : password (en clair, à hasher)"
+      },
+      "UserOut": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "full_name",
+          "email",
+          "role",
+          "id",
+          "is_active"
+        ],
+        "title": "UserOut",
+        "description": "Données renvoyées par l'API :\n- toutes les infos utilisateur sauf le mot de passe\n- audit : id, statut, timestamps"
+      },
+      "UserRole": {
+        "type": "string",
+        "enum": [
+          "admin",
+          "responsable",
+          "technicien",
+          "client"
+        ],
+        "title": "UserRole",
+        "description": "Rôles disponibles dans l’ERP :\n- admin : contrôle total\n- responsable : supervise les interventions\n- technicien : effectue les interventions\n- client : consultation uniquement"
+      },
+      "UserUpdate": {
+        "properties": {
+          "full_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Full Name"
+          },
+          "password": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "title": "UserUpdate",
+        "description": "Champs modifiables par l'utilisateur :\n- nom complet\n- mot de passe"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "app__models__intervention__InterventionType": {
+        "type": "string",
+        "enum": [
+          "corrective",
+          "preventive",
+          "ameliorative",
+          "diagnostic"
+        ],
+        "title": "InterventionType",
+        "description": "Types d'intervention de maintenance.\n\n- corrective : intervention suite à panne ou dysfonctionnement\n- preventive : maintenance planifiée selon cycles\n- ameliorative : amélioration/upgrade d'équipement\n- diagnostic : expertise et analyse technique"
+      },
+      "app__models__intervention__StatutIntervention": {
+        "type": "string",
+        "enum": [
+          "ouverte",
+          "affectee",
+          "en_cours",
+          "en_attente",
+          "cloturee",
+          "annulee",
+          "archivee"
+        ],
+        "title": "StatutIntervention",
+        "description": "Machine d'état pour le workflow d'intervention.\n\nWorkflow standard :\nouverte → affectee → en_cours → [en_attente] → cloturee → archivee\n\n- ouverte : nouvelle intervention créée\n- affectee : technicien assigné\n- en_cours : travaux démarrés sur site\n- en_attente : pause (attente pièce/autorisation)\n- cloturee : travaux terminés et validés\n- annulee : intervention annulée\n- archivee : archivage administratif"
+      },
+      "app__schemas__intervention__InterventionType": {
+        "type": "string",
+        "enum": [
+          "corrective",
+          "preventive"
+        ],
+        "title": "InterventionType"
+      },
+      "app__schemas__intervention__StatutIntervention": {
+        "type": "string",
+        "enum": [
+          "ouverte",
+          "affectee",
+          "en_cours",
+          "en_attente",
+          "cloturee",
+          "archivee"
+        ],
+        "title": "StatutIntervention"
+      }
+    },
+    "securitySchemes": {
+      "OAuth2PasswordBearer": {
+        "type": "oauth2",
+        "flows": {
+          "password": {
+            "scopes": {},
+            "tokenUrl": "/api/v1/auth/token"
+          }
+        }
+      }
+    }
+  }
+}

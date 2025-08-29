@@ -1,0 +1,45 @@
+# --- Core FastAPI + HTTP ---
+fastapi
+uvicorn[standard]      # Serveur ASGI avec reload, color, etc.
+
+# --- DB/ORM ---
+sqlalchemy>=1.4
+alembic                # Migrations
+psycopg2-binary        # PostgreSQL
+sqlalchemy-utils       # Utilitaires SQLAlchemy
+SQLAlchemy
+# --- Sécurité / Auth ---
+python-jose[cryptography]   # JWT (obligatoire, version jose officielle)
+passlib[bcrypt]             # Hashing sécurisé (mot de passe)
+bcrypt==3.2.0               # pin to 3.x because passlib 1.7.4 expects bcrypt <4
+
+# --- Pydantic (validation) ---
+pydantic>=2.6,<3.0         # Version stable, V1/2 support
+pydantic-settings           # Chargement des paramètres via BaseSettings (Pydantic v2)
+python-multipart            # FormData (upload, login)
+
+# --- Email ---
+fastapi-mail                # Envoi d'emails
+
+# --- Scheduling / Jobs ---
+APScheduler                 # Planification jobs/tasks (ex : notifications)
+
+# --- Cache / Asynchrone ---
+redis                       # Pour notifications, sessions, etc.
+
+# --- Tests & outils dev ---
+pytest
+pytest-asyncio              # Pour tests asynchrones
+pytest-cov                  # Coverage des tests
+pytest-html                 # Rapport HTML des tests
+httpx                       # Client HTTP pour tests API
+Faker                       # Génération de fausses données pour tests
+
+# --- Qualité de code ---
+black                       # Formatage de code
+isort                       # Tri des imports  
+flake8                      # Linter
+coverage                    # Mesure de couverture de code
+
+# --- Divers & utilitaires ---
+python-dotenv               # Pour charger .env facilement

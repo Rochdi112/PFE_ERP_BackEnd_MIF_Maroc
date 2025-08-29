@@ -1,0 +1,10 @@
+{
+  "missing_endpoints": [],
+  "extra_endpoints": [],
+  "role_differences": [],
+  "role_unknown": [],
+  "detected_base_paths": [
+    "/",
+    "/api/v1"
+  ]
+}
