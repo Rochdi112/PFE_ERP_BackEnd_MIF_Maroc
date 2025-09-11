@@ -1,9 +1,11 @@
 # app/schemas/user.py
 
-from pydantic import BaseModel, EmailStr, ConfigDict
+from datetime import datetime
 from enum import Enum
 from typing import Optional
-from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, EmailStr
+
 
 # ===============================
 # 🎯 ENUM des rôles utilisateur
@@ -16,10 +18,12 @@ class UserRole(str, Enum):
     - technicien : effectue les interventions
     - client : consultation uniquement
     """
+
     admin = "admin"
     responsable = "responsable"
     technicien = "technicien"
     client = "client"
+
 
 # ================================
 # 👤 Schéma de base utilisateur
@@ -32,10 +36,12 @@ class UserBase(BaseModel):
     - email : adresse email unique
     - role : rôle de l'utilisateur
     """
+
     username: str
     full_name: str
     email: EmailStr
     role: UserRole
+
 
 # =======================================
 # 📥 Schéma de création (input POST)
@@ -46,7 +52,9 @@ class UserCreate(UserBase):
     - hérite de UserBase
     - ajoute : password (en clair, à hasher)
     """
+
     password: str
+
 
 # =======================================
 # 📤 Schéma de sortie (output GET)
@@ -57,12 +65,14 @@ class UserOut(UserBase):
     - toutes les infos utilisateur sauf le mot de passe
     - audit : id, statut, timestamps
     """
+
     id: int
     is_active: bool
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)  # Active l'ORM mode pour SQLAlchemy
+
 
 # =======================================
 # 🔁 Schéma de mise à jour utilisateur
@@ -73,8 +83,10 @@ class UserUpdate(BaseModel):
     - nom complet
     - mot de passe
     """
+
     full_name: Optional[str] = None
     password: Optional[str] = None
+
 
 # =======================================
 # 🔐 Schémas pour l'authentification
@@ -85,14 +97,19 @@ class TokenRequest(BaseModel):
     - email
     - mot de passe
     """
+
     email: EmailStr
     password: str
+
 
 class TokenResponse(BaseModel):
     """
     Réponse retournée après login :
     - access_token : JWT signé
+    - refresh_token : token de rafraîchissement
     - token_type : 'bearer'
     """
+
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"

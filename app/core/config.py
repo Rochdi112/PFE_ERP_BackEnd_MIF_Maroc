@@ -1,8 +1,9 @@
 # app/core/config.py
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field, field_validator
 from typing import List
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -12,7 +13,9 @@ class Settings(BaseSettings):
     # Security
     SECRET_KEY: str = Field(default="insecure-test-secret-key")
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # durée de validité JWT en minutes
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 480  # durée de validité JWT en minutes (8 heures pour faciliter les tests)
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7  # durée de validité des refresh tokens
+    FILES_ENC_KEY: str = Field(default="")  # clé Fernet pour chiffrement des documents
 
     # Email SMTP
     SMTP_HOST: str = Field(default="localhost")
@@ -32,18 +35,26 @@ class Settings(BaseSettings):
     UPLOAD_DIRECTORY: str = Field(default="app/static/uploads")
 
     # CORS
-    CORS_ALLOW_ORIGINS: List[str] = Field(default_factory=lambda: [
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:8000",
-    ])
+    CORS_ALLOW_ORIGINS: List[str] = Field(
+        default_factory=lambda: [
+            "http://localhost:3000",
+            "http://localhost:3001",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:8000",
+        ]
+    )
 
     # Scheduler toggle
     ENABLE_SCHEDULER: bool = Field(default=False)
 
+    # Debug mode
+    DEBUG: bool = Field(default=False)
+
     # Logging
     LOG_LEVEL: str = Field(default="INFO")
+
+    @property
     def DATABASE_URL(self) -> str:
         return (
             f"postgresql+psycopg2://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"

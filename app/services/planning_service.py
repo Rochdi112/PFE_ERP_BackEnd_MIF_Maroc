@@ -1,10 +1,12 @@
 # app/services/planning_service.py
 
-from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
 from datetime import datetime
-from app.models.planning import Planning
+
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
+
 from app.models.equipement import Equipement
+from app.models.planning import Planning
 from app.schemas.planning import PlanningCreate
 
 
@@ -15,12 +17,15 @@ def create_planning(db: Session, data: PlanningCreate) -> Planning:
     Raises:
         HTTPException 404: si l’équipement est introuvable
     """
-    equipement = db.query(Equipement).filter(Equipement.id == data.equipement_id).first()
+    equipement = (
+        db.query(Equipement).filter(Equipement.id == data.equipement_id).first()
+    )
     if not equipement:
         raise HTTPException(status_code=404, detail="Équipement introuvable")
 
     # Normalise la fréquence reçue (str) vers l'enum
     from app.models.planning import FrequencePlanning
+
     key = str(data.frequence).strip().lower()
     mapping = {
         "journalier": FrequencePlanning.journalier,
@@ -43,7 +48,7 @@ def create_planning(db: Session, data: PlanningCreate) -> Planning:
         prochaine_date=data.prochaine_date,
         derniere_date=data.derniere_date,
         equipement_id=data.equipement_id,
-        date_creation=datetime.utcnow()
+        date_creation=datetime.utcnow(),
     )
 
     db.add(planning)
@@ -72,7 +77,9 @@ def get_all_plannings(db: Session) -> list[Planning]:
     return db.query(Planning).all()
 
 
-def update_planning_dates(db: Session, planning_id: int, nouvelle_date: datetime) -> Planning:
+def update_planning_dates(
+    db: Session, planning_id: int, nouvelle_date: datetime
+) -> Planning:
     """
     Met à jour les dates (dernière/prochaine) d’un planning.
 
@@ -88,7 +95,10 @@ def update_planning_dates(db: Session, planning_id: int, nouvelle_date: datetime
     db.refresh(planning)
     return planning
 
-def update_planning_frequence(db: Session, planning_id: int, frequence: str) -> Planning:
+
+def update_planning_frequence(
+    db: Session, planning_id: int, frequence: str
+) -> Planning:
     """
     Met à jour la fréquence d'un planning. Accepte une chaîne brute depuis l'API.
     """
@@ -96,6 +106,7 @@ def update_planning_frequence(db: Session, planning_id: int, frequence: str) -> 
     if frequence:
         # Normalise et map vers l'enum FrequencePlanning si possible
         from app.models.planning import FrequencePlanning
+
         key = str(frequence).strip().lower()
         mapping = {
             "journalier": FrequencePlanning.journalier,
@@ -113,6 +124,7 @@ def update_planning_frequence(db: Session, planning_id: int, frequence: str) -> 
     db.commit()
     db.refresh(planning)
     return planning
+
 
 def delete_planning(db: Session, planning_id: int) -> None:
     planning = get_planning_by_id(db, planning_id)

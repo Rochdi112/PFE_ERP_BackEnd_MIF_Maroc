@@ -1,15 +1,18 @@
 # app/schemas/intervention.py
 
-from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional
 from datetime import datetime
 from enum import Enum
+from typing import Optional
+
+from pydantic import BaseModel, ConfigDict, Field
+
 
 class InterventionType(str, Enum):
     corrective = "corrective"
     preventive = "preventive"
     ameliorative = "ameliorative"
     diagnostic = "diagnostic"
+
 
 class StatutIntervention(str, Enum):
     ouverte = "ouverte"
@@ -20,12 +23,14 @@ class StatutIntervention(str, Enum):
     annulee = "annulee"
     archivee = "archivee"
 
+
 class PrioriteIntervention(str, Enum):
     urgente = "urgente"
     haute = "haute"
     normale = "normale"
     basse = "basse"
     programmee = "programmee"
+
 
 class InterventionBase(BaseModel):
     titre: str
@@ -44,9 +49,11 @@ class InterventionBase(BaseModel):
         populate_by_name=True,
     )
 
+
 class InterventionCreate(InterventionBase):
     technicien_id: Optional[int] = None
     equipement_id: int
+
 
 class InterventionOut(InterventionBase):
     id: int

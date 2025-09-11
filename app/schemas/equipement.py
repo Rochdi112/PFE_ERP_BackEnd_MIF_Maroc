@@ -1,5 +1,7 @@
-from pydantic import BaseModel, Field
 from typing import Optional
+
+from pydantic import BaseModel, Field
+
 
 class EquipementBase(BaseModel):
     nom: str
@@ -9,20 +11,16 @@ class EquipementBase(BaseModel):
     # Tests envoient une chaîne; stocké en int jours côté modèle
     frequence_entretien: Optional[str] = None
 
-    model_config = {
-        "from_attributes": True,
-        "validate_by_name": True
-    }
+    model_config = {"from_attributes": True, "validate_by_name": True}
+
 
 class EquipementCreate(EquipementBase):
     pass
+
 
 class EquipementOut(EquipementBase):
     id: int
     # Expose properties compatibles
     frequence_entretien: Optional[str] = None
 
-    model_config = {
-        "from_attributes": True,
-        "validate_by_name": True
-    }
+    model_config = {"from_attributes": True, "validate_by_name": True}

@@ -1,12 +1,13 @@
 # app/core/logging.py
 
-import logging
 import json
+import logging
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any
+
 from app.core.config import settings
+
 
 class JSONFormatter(logging.Formatter):
     """Custom JSON formatter for structured logging"""
@@ -27,10 +28,11 @@ class JSONFormatter(logging.Formatter):
             log_entry["exception"] = self.formatException(record.exc_info)
 
         # Add extra fields if present
-        if hasattr(record, 'extra_fields'):
+        if hasattr(record, "extra_fields"):
             log_entry.update(record.extra_fields)
 
         return json.dumps(log_entry)
+
 
 def setup_logging() -> None:
     """Setup structured logging for the application"""
@@ -66,9 +68,11 @@ def setup_logging() -> None:
     logging.getLogger("uvicorn.access").setLevel(logging.INFO)
     logging.getLogger("sqlalchemy").setLevel(logging.WARNING)
 
+
 def get_logger(name: str) -> logging.Logger:
     """Get a logger instance with the specified name"""
     return logging.getLogger(name)
+
 
 # Global logger instance
 logger = get_logger(__name__)

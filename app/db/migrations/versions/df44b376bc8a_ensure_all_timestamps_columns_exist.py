@@ -5,15 +5,16 @@ Revises: bb94288d88f3
 Create Date: 2025-08-06 05:05:35.530410
 
 """
+
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'df44b376bc8a'
-down_revision: Union[str, Sequence[str], None] = '2a1f3c8d7c1b'
+revision: str = "df44b376bc8a"
+down_revision: Union[str, Sequence[str], None] = "2a1f3c8d7c1b"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -24,113 +25,164 @@ def upgrade() -> None:
     bind = op.get_bind()
     dialect = bind.dialect.name if bind is not None else None
 
-    op.create_table('report_schedules',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('name', sa.String(length=255), nullable=False),
-    sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('report_type', sa.String(length=50), nullable=False),
-    sa.Column('report_format', sa.String(length=10), nullable=False),
-    sa.Column('report_title_template', sa.String(length=255), nullable=True),
-    sa.Column('cron_expression', sa.String(length=100), nullable=False),
-    sa.Column('timezone', sa.String(length=50), nullable=True),
-    sa.Column('default_filters', sa.JSON(), nullable=True),
-    sa.Column('default_parameters', sa.JSON(), nullable=True),
-    sa.Column('email_enabled', sa.Boolean(), nullable=True),
-    sa.Column('email_recipients', sa.JSON(), nullable=True),
-    sa.Column('email_subject_template', sa.String(length=255), nullable=True),
-    sa.Column('email_body_template', sa.Text(), nullable=True),
-    sa.Column('keep_reports_days', sa.Integer(), nullable=True),
-    sa.Column('max_reports_to_keep', sa.Integer(), nullable=True),
-    sa.Column('is_active', sa.Boolean(), nullable=False),
-    sa.Column('last_run_at', sa.DateTime(), nullable=True),
-    sa.Column('next_run_at', sa.DateTime(), nullable=True),
-    sa.Column('last_success_at', sa.DateTime(), nullable=True),
-    sa.Column('last_error_message', sa.Text(), nullable=True),
-    sa.Column('run_count', sa.Integer(), nullable=True),
-    sa.Column('success_count', sa.Integer(), nullable=True),
-    sa.Column('date_creation', sa.DateTime(), nullable=False),
-    sa.Column('date_modification', sa.DateTime(), nullable=True),
-    sa.Column('created_by_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['created_by_id'], ['users.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id')
+    op.create_table(
+        "report_schedules",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("name", sa.String(length=255), nullable=False),
+        sa.Column("description", sa.Text(), nullable=True),
+        sa.Column("report_type", sa.String(length=50), nullable=False),
+        sa.Column("report_format", sa.String(length=10), nullable=False),
+        sa.Column("report_title_template", sa.String(length=255), nullable=True),
+        sa.Column("cron_expression", sa.String(length=100), nullable=False),
+        sa.Column("timezone", sa.String(length=50), nullable=True),
+        sa.Column("default_filters", sa.JSON(), nullable=True),
+        sa.Column("default_parameters", sa.JSON(), nullable=True),
+        sa.Column("email_enabled", sa.Boolean(), nullable=True),
+        sa.Column("email_recipients", sa.JSON(), nullable=True),
+        sa.Column("email_subject_template", sa.String(length=255), nullable=True),
+        sa.Column("email_body_template", sa.Text(), nullable=True),
+        sa.Column("keep_reports_days", sa.Integer(), nullable=True),
+        sa.Column("max_reports_to_keep", sa.Integer(), nullable=True),
+        sa.Column("is_active", sa.Boolean(), nullable=False),
+        sa.Column("last_run_at", sa.DateTime(), nullable=True),
+        sa.Column("next_run_at", sa.DateTime(), nullable=True),
+        sa.Column("last_success_at", sa.DateTime(), nullable=True),
+        sa.Column("last_error_message", sa.Text(), nullable=True),
+        sa.Column("run_count", sa.Integer(), nullable=True),
+        sa.Column("success_count", sa.Integer(), nullable=True),
+        sa.Column("date_creation", sa.DateTime(), nullable=False),
+        sa.Column("date_modification", sa.DateTime(), nullable=True),
+        sa.Column("created_by_id", sa.Integer(), nullable=True),
+        sa.ForeignKeyConstraint(["created_by_id"], ["users.id"], ondelete="SET NULL"),
+        sa.PrimaryKeyConstraint("id"),
     )
-    op.create_index(op.f('ix_report_schedules_id'), 'report_schedules', ['id'], unique=False)
-    op.create_index(op.f('ix_report_schedules_next_run_at'), 'report_schedules', ['next_run_at'], unique=False)
-    op.create_table('reports',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('title', sa.String(length=255), nullable=False),
-    sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('report_type', sa.String(length=50), nullable=False),
-    sa.Column('report_format', sa.String(length=10), nullable=False),
-    sa.Column('status', sa.String(length=20), nullable=False),
-    sa.Column('file_path', sa.String(length=500), nullable=True),
-    sa.Column('file_name', sa.String(length=255), nullable=True),
-    sa.Column('file_size', sa.BigInteger(), nullable=True),
-    sa.Column('mime_type', sa.String(length=100), nullable=True),
-    sa.Column('filters_json', sa.JSON(), nullable=True),
-    sa.Column('parameters', sa.JSON(), nullable=True),
-    sa.Column('date_creation', sa.DateTime(), nullable=False),
-    sa.Column('date_generation_start', sa.DateTime(), nullable=True),
-    sa.Column('date_generation_end', sa.DateTime(), nullable=True),
-    sa.Column('date_expiration', sa.DateTime(), nullable=True),
-    sa.Column('is_public', sa.Boolean(), nullable=False),
-    sa.Column('is_downloadable', sa.Boolean(), nullable=False),
-    sa.Column('access_token', sa.String(length=100), nullable=True),
-    sa.Column('download_count', sa.Integer(), nullable=False),
-    sa.Column('last_downloaded_at', sa.DateTime(), nullable=True),
-    sa.Column('error_message', sa.Text(), nullable=True),
-    sa.Column('generation_log', sa.Text(), nullable=True),
-    sa.Column('created_by_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['created_by_id'], ['users.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('access_token')
+    op.create_index(
+        op.f("ix_report_schedules_id"), "report_schedules", ["id"], unique=False
     )
-    op.create_index(op.f('ix_reports_date_creation'), 'reports', ['date_creation'], unique=False)
-    op.create_index(op.f('ix_reports_date_expiration'), 'reports', ['date_expiration'], unique=False)
-    op.create_index(op.f('ix_reports_id'), 'reports', ['id'], unique=False)
-    op.create_index(op.f('ix_reports_report_format'), 'reports', ['report_format'], unique=False)
-    op.create_index(op.f('ix_reports_report_type'), 'reports', ['report_type'], unique=False)
-    op.create_index(op.f('ix_reports_status'), 'reports', ['status'], unique=False)
-    op.create_index(op.f('ix_reports_title'), 'reports', ['title'], unique=False)
+    op.create_index(
+        op.f("ix_report_schedules_next_run_at"),
+        "report_schedules",
+        ["next_run_at"],
+        unique=False,
+    )
+    op.create_table(
+        "reports",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("title", sa.String(length=255), nullable=False),
+        sa.Column("description", sa.Text(), nullable=True),
+        sa.Column("report_type", sa.String(length=50), nullable=False),
+        sa.Column("report_format", sa.String(length=10), nullable=False),
+        sa.Column("status", sa.String(length=20), nullable=False),
+        sa.Column("file_path", sa.String(length=500), nullable=True),
+        sa.Column("file_name", sa.String(length=255), nullable=True),
+        sa.Column("file_size", sa.BigInteger(), nullable=True),
+        sa.Column("mime_type", sa.String(length=100), nullable=True),
+        sa.Column("filters_json", sa.JSON(), nullable=True),
+        sa.Column("parameters", sa.JSON(), nullable=True),
+        sa.Column("date_creation", sa.DateTime(), nullable=False),
+        sa.Column("date_generation_start", sa.DateTime(), nullable=True),
+        sa.Column("date_generation_end", sa.DateTime(), nullable=True),
+        sa.Column("date_expiration", sa.DateTime(), nullable=True),
+        sa.Column("is_public", sa.Boolean(), nullable=False),
+        sa.Column("is_downloadable", sa.Boolean(), nullable=False),
+        sa.Column("access_token", sa.String(length=100), nullable=True),
+        sa.Column("download_count", sa.Integer(), nullable=False),
+        sa.Column("last_downloaded_at", sa.DateTime(), nullable=True),
+        sa.Column("error_message", sa.Text(), nullable=True),
+        sa.Column("generation_log", sa.Text(), nullable=True),
+        sa.Column("created_by_id", sa.Integer(), nullable=True),
+        sa.ForeignKeyConstraint(["created_by_id"], ["users.id"], ondelete="SET NULL"),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("access_token"),
+    )
+    op.create_index(
+        op.f("ix_reports_date_creation"), "reports", ["date_creation"], unique=False
+    )
+    op.create_index(
+        op.f("ix_reports_date_expiration"), "reports", ["date_expiration"], unique=False
+    )
+    op.create_index(op.f("ix_reports_id"), "reports", ["id"], unique=False)
+    op.create_index(
+        op.f("ix_reports_report_format"), "reports", ["report_format"], unique=False
+    )
+    op.create_index(
+        op.f("ix_reports_report_type"), "reports", ["report_type"], unique=False
+    )
+    op.create_index(op.f("ix_reports_status"), "reports", ["status"], unique=False)
+    op.create_index(op.f("ix_reports_title"), "reports", ["title"], unique=False)
 
     # Unique "nom" on equipements: use batch/unique index on SQLite
-    if dialect == 'sqlite':
-        op.create_index('uq_equipements_nom_idx', 'equipements', ['nom'], unique=True)
+    if dialect == "sqlite":
+        op.create_index("uq_equipements_nom_idx", "equipements", ["nom"], unique=True)
     else:
-        op.create_unique_constraint(None, 'equipements', ['nom'])
+        op.create_unique_constraint(None, "equipements", ["nom"])
 
-    op.add_column('interventions', sa.Column('date_debut_travaux', sa.DateTime(), nullable=True))
-    op.add_column('interventions', sa.Column('duree_estimee', sa.Integer(), nullable=True))
-    op.add_column('interventions', sa.Column('duree_reelle', sa.Integer(), nullable=True))
-    op.add_column('interventions', sa.Column('cout_estime', sa.Integer(), nullable=True))
-    op.add_column('interventions', sa.Column('cout_reel', sa.Integer(), nullable=True))
-    op.add_column('interventions', sa.Column('client_id', sa.Integer(), nullable=True))
-    op.add_column('interventions', sa.Column('contrat_id', sa.Integer(), nullable=True))
-    if dialect != 'sqlite':
-        op.alter_column('interventions', 'description',
-                   existing_type=sa.VARCHAR(),
-                   type_=sa.Text(),
-                   existing_nullable=True)
-        op.alter_column('interventions', 'urgence',
-                   existing_type=sa.BOOLEAN(),
-                   nullable=False)
-        op.alter_column('interventions', 'date_creation',
-                   existing_type=postgresql.TIMESTAMP(),
-                   nullable=False)
-    op.create_index(op.f('ix_interventions_date_creation'), 'interventions', ['date_creation'], unique=False)
-    op.create_index(op.f('ix_interventions_statut'), 'interventions', ['statut'], unique=False)
-    op.create_index(op.f('ix_interventions_titre'), 'interventions', ['titre'], unique=False)
-    op.create_index(op.f('ix_interventions_type'), 'interventions', ['type'], unique=False)
-    if dialect != 'sqlite':
-        op.create_foreign_key(None, 'interventions', 'clients', ['client_id'], ['id'], ondelete='CASCADE')
-        op.create_foreign_key(None, 'interventions', 'contrats', ['contrat_id'], ['id'], ondelete='SET NULL')
-    op.add_column('users', sa.Column('created_at', sa.DateTime(), nullable=False))
-    op.add_column('users', sa.Column('updated_at', sa.DateTime(), nullable=True))
-    op.add_column('users', sa.Column('last_login', sa.DateTime(), nullable=True))
-    if dialect != 'sqlite':
-        op.alter_column('users', 'is_active',
-                   existing_type=sa.BOOLEAN(),
-                   nullable=False)
+    op.add_column(
+        "interventions", sa.Column("date_debut_travaux", sa.DateTime(), nullable=True)
+    )
+    op.add_column(
+        "interventions", sa.Column("duree_estimee", sa.Integer(), nullable=True)
+    )
+    op.add_column(
+        "interventions", sa.Column("duree_reelle", sa.Integer(), nullable=True)
+    )
+    op.add_column(
+        "interventions", sa.Column("cout_estime", sa.Integer(), nullable=True)
+    )
+    op.add_column("interventions", sa.Column("cout_reel", sa.Integer(), nullable=True))
+    op.add_column("interventions", sa.Column("client_id", sa.Integer(), nullable=True))
+    op.add_column("interventions", sa.Column("contrat_id", sa.Integer(), nullable=True))
+    if dialect != "sqlite":
+        op.alter_column(
+            "interventions",
+            "description",
+            existing_type=sa.VARCHAR(),
+            type_=sa.Text(),
+            existing_nullable=True,
+        )
+        op.alter_column(
+            "interventions", "urgence", existing_type=sa.BOOLEAN(), nullable=False
+        )
+        op.alter_column(
+            "interventions",
+            "date_creation",
+            existing_type=postgresql.TIMESTAMP(),
+            nullable=False,
+        )
+    op.create_index(
+        op.f("ix_interventions_date_creation"),
+        "interventions",
+        ["date_creation"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_interventions_statut"), "interventions", ["statut"], unique=False
+    )
+    op.create_index(
+        op.f("ix_interventions_titre"), "interventions", ["titre"], unique=False
+    )
+    op.create_index(
+        op.f("ix_interventions_type"), "interventions", ["type"], unique=False
+    )
+    if dialect != "sqlite":
+        op.create_foreign_key(
+            None, "interventions", "clients", ["client_id"], ["id"], ondelete="CASCADE"
+        )
+        op.create_foreign_key(
+            None,
+            "interventions",
+            "contrats",
+            ["contrat_id"],
+            ["id"],
+            ondelete="SET NULL",
+        )
+    op.add_column("users", sa.Column("created_at", sa.DateTime(), nullable=False))
+    op.add_column("users", sa.Column("updated_at", sa.DateTime(), nullable=True))
+    op.add_column("users", sa.Column("last_login", sa.DateTime(), nullable=True))
+    if dialect != "sqlite":
+        op.alter_column(
+            "users", "is_active", existing_type=sa.BOOLEAN(), nullable=False
+        )
     # ### end Alembic commands ###
 
 
@@ -139,50 +191,56 @@ def downgrade() -> None:
     # ### commands auto generated by Alembic - please adjust! ###
     bind = op.get_bind()
     dialect = bind.dialect.name if bind is not None else None
-    if dialect != 'sqlite':
-        op.alter_column('users', 'is_active',
-                   existing_type=sa.BOOLEAN(),
-                   nullable=True)
-    op.drop_column('users', 'last_login')
-    op.drop_column('users', 'updated_at')
-    op.drop_column('users', 'created_at')
-    if dialect != 'sqlite':
-        op.drop_constraint(None, 'interventions', type_='foreignkey')
-        op.drop_constraint(None, 'interventions', type_='foreignkey')
-    op.drop_index(op.f('ix_interventions_type'), table_name='interventions')
-    op.drop_index(op.f('ix_interventions_titre'), table_name='interventions')
-    op.drop_index(op.f('ix_interventions_statut'), table_name='interventions')
-    op.drop_index(op.f('ix_interventions_date_creation'), table_name='interventions')
-    op.alter_column('interventions', 'date_creation',
-               existing_type=postgresql.TIMESTAMP(),
-               nullable=True)
-    op.alter_column('interventions', 'urgence',
-               existing_type=sa.BOOLEAN(),
-               nullable=True)
-    op.alter_column('interventions', 'description',
-               existing_type=sa.Text(),
-               type_=sa.VARCHAR(),
-               existing_nullable=True)
-    op.drop_column('interventions', 'contrat_id')
-    op.drop_column('interventions', 'client_id')
-    op.drop_column('interventions', 'cout_reel')
-    op.drop_column('interventions', 'cout_estime')
-    op.drop_column('interventions', 'duree_reelle')
-    op.drop_column('interventions', 'duree_estimee')
-    op.drop_column('interventions', 'date_debut_travaux')
-    if dialect == 'sqlite':
-        op.drop_index('uq_equipements_nom_idx', table_name='equipements')
+    if dialect != "sqlite":
+        op.alter_column("users", "is_active", existing_type=sa.BOOLEAN(), nullable=True)
+    op.drop_column("users", "last_login")
+    op.drop_column("users", "updated_at")
+    op.drop_column("users", "created_at")
+    if dialect != "sqlite":
+        op.drop_constraint(None, "interventions", type_="foreignkey")
+        op.drop_constraint(None, "interventions", type_="foreignkey")
+    op.drop_index(op.f("ix_interventions_type"), table_name="interventions")
+    op.drop_index(op.f("ix_interventions_titre"), table_name="interventions")
+    op.drop_index(op.f("ix_interventions_statut"), table_name="interventions")
+    op.drop_index(op.f("ix_interventions_date_creation"), table_name="interventions")
+    op.alter_column(
+        "interventions",
+        "date_creation",
+        existing_type=postgresql.TIMESTAMP(),
+        nullable=True,
+    )
+    op.alter_column(
+        "interventions", "urgence", existing_type=sa.BOOLEAN(), nullable=True
+    )
+    op.alter_column(
+        "interventions",
+        "description",
+        existing_type=sa.Text(),
+        type_=sa.VARCHAR(),
+        existing_nullable=True,
+    )
+    op.drop_column("interventions", "contrat_id")
+    op.drop_column("interventions", "client_id")
+    op.drop_column("interventions", "cout_reel")
+    op.drop_column("interventions", "cout_estime")
+    op.drop_column("interventions", "duree_reelle")
+    op.drop_column("interventions", "duree_estimee")
+    op.drop_column("interventions", "date_debut_travaux")
+    if dialect == "sqlite":
+        op.drop_index("uq_equipements_nom_idx", table_name="equipements")
     else:
-        op.drop_constraint(None, 'equipements', type_='unique')
-    op.drop_index(op.f('ix_reports_title'), table_name='reports')
-    op.drop_index(op.f('ix_reports_status'), table_name='reports')
-    op.drop_index(op.f('ix_reports_report_type'), table_name='reports')
-    op.drop_index(op.f('ix_reports_report_format'), table_name='reports')
-    op.drop_index(op.f('ix_reports_id'), table_name='reports')
-    op.drop_index(op.f('ix_reports_date_expiration'), table_name='reports')
-    op.drop_index(op.f('ix_reports_date_creation'), table_name='reports')
-    op.drop_table('reports')
-    op.drop_index(op.f('ix_report_schedules_next_run_at'), table_name='report_schedules')
-    op.drop_index(op.f('ix_report_schedules_id'), table_name='report_schedules')
-    op.drop_table('report_schedules')
+        op.drop_constraint(None, "equipements", type_="unique")
+    op.drop_index(op.f("ix_reports_title"), table_name="reports")
+    op.drop_index(op.f("ix_reports_status"), table_name="reports")
+    op.drop_index(op.f("ix_reports_report_type"), table_name="reports")
+    op.drop_index(op.f("ix_reports_report_format"), table_name="reports")
+    op.drop_index(op.f("ix_reports_id"), table_name="reports")
+    op.drop_index(op.f("ix_reports_date_expiration"), table_name="reports")
+    op.drop_index(op.f("ix_reports_date_creation"), table_name="reports")
+    op.drop_table("reports")
+    op.drop_index(
+        op.f("ix_report_schedules_next_run_at"), table_name="report_schedules"
+    )
+    op.drop_index(op.f("ix_report_schedules_id"), table_name="report_schedules")
+    op.drop_table("report_schedules")
     # ### end Alembic commands ###

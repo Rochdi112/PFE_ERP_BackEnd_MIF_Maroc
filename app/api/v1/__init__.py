@@ -1,20 +1,22 @@
 # app/api/v1/__init__.py
 
-from . import auth
-from . import users
-from . import techniciens
-from . import equipements
-from . import interventions
-from . import planning
-from . import notifications
-from . import documents
-from . import filters
-from . import dashboard
-from . import health
+from . import (
+    auth,
+    dashboard,
+    documents,
+    equipements,
+    filters,
+    health,
+    interventions,
+    notifications,
+    planning,
+    techniciens,
+    users,
+)
 
 __all__ = [
     "auth",
-    "users", 
+    "users",
     "techniciens",
     "equipements",
     "interventions",
@@ -23,5 +25,5 @@ __all__ = [
     "documents",
     "filters",
     "dashboard",
-    "health"
+    "health",
 ]

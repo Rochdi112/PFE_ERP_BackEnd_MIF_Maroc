@@ -1,7 +1,5 @@
 from app.core.rbac import decode_token, require_roles
 from app.core.security import create_access_token
-from app.core.config import settings
-from types import SimpleNamespace
 
 
 def test_decode_token_and_require_roles():

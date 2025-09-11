@@ -17,34 +17,34 @@ Architecture:
 - Interface harmonisée to_dict() pour sérialisation
 """
 
-from sqlalchemy import Column, Integer, String, Enum, Boolean, DateTime, Index
-from sqlalchemy.orm import relationship
-from datetime import datetime, timedelta
-from app.db.database import Base
 import enum
-from typing import TYPE_CHECKING, Optional, Dict, Any
+from datetime import datetime, timedelta
+from typing import TYPE_CHECKING, Any, Dict, Optional
+
+from sqlalchemy import Boolean, Column, DateTime, Enum, Index, Integer, String
+from sqlalchemy.orm import relationship
+
+from app.db.database import Base
 
 # NOTE: Import conditionnel pour éviter les imports circulaires
 if TYPE_CHECKING:
-    from .technicien import Technicien
     from .client import Client
-    from .notification import Notification
-    from .historique import HistoriqueIntervention
-    from .stock import MouvementStock
+    from .technicien import Technicien
 
 
 class UserRole(str, enum.Enum):
     """
     Énumération des rôles utilisateur dans l'ERP.
-    
+
     Hiérarchie des permissions (décroissante) :
     - admin : contrôle total du système, gestion utilisateurs
     - responsable : supervise interventions, équipes, planification
     - technicien : exécute interventions, saisie données terrain
     - client : consultation interventions, équipements personnels
-    
+
     NOTE: Extensible pour futurs rôles (auditeur, manager, etc.)
     """
+
     admin = "admin"
     responsable = "responsable"
     technicien = "technicien"
@@ -54,7 +54,7 @@ class UserRole(str, enum.Enum):
 class User(Base):
     """
     Modèle Utilisateur - Authentification et autorisation centrale.
-    
+
     Point d'entrée unique pour l'authentification système avec :
     - Gestion des identifiants et mots de passe (hachés)
     - Système RBAC avec rôles métier
@@ -62,27 +62,28 @@ class User(Base):
     - Audit complet des actions utilisateur
     - Notifications personnalisées et alertes
     - Sessions et gestion de l'activité
-    
+
     Relations clés :
     - 1:1 avec Technicien (si rôle technicien)
     - 1:1 avec Client (si rôle client)
     - 1:N avec notifications, historiques, mouvements
-    
+
     Performances :
     - Index composites sur email+active, username+role
     - Relations lazy=dynamic pour collections volumineuses
     - Propriétés calculées mises en cache côté application
     """
+
     __tablename__ = "users"
     # Autorise les annotations non-Mapped legacy (compat SQLAlchemy 2.0)
     __allow_unmapped__ = True
 
     # NOTE: Index composites pour optimiser les requêtes fréquentes
     __table_args__ = (
-        Index('idx_user_email_active', 'email', 'is_active'),
-        Index('idx_user_username_role', 'username', 'role'),
-        Index('idx_user_role_active', 'role', 'is_active'),
-        Index('idx_user_created_role', 'created_at', 'role'),
+        Index("idx_user_email_active", "email", "is_active"),
+        Index("idx_user_username_role", "username", "role"),
+        Index("idx_user_role_active", "role", "is_active"),
+        Index("idx_user_created_role", "created_at", "role"),
     )
 
     # Clé primaire
@@ -100,56 +101,58 @@ class User(Base):
 
     # Métadonnées temporelles
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    updated_at = Column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
     last_login = Column(DateTime, nullable=True)
-    
+
     # Sécurité et sessions
     failed_login_attempts = Column(Integer, default=0, nullable=False)
     locked_until = Column(DateTime, nullable=True)
     password_changed_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     # 🔗 Relations ORM optimisées
-    
+
     # Relations spécialisées selon rôle (1:1)
     technicien: Optional["Technicien"] = relationship(
-        "Technicien", 
-        uselist=False, 
+        "Technicien",
+        uselist=False,
         back_populates="user",
         cascade="all, delete-orphan",
-        lazy="select"  # NOTE: Chargement immédiat pour relation 1:1
+        lazy="select",  # NOTE: Chargement immédiat pour relation 1:1
     )
-    
+
     client: Optional["Client"] = relationship(
-        "Client", 
-        uselist=False, 
+        "Client",
+        uselist=False,
         back_populates="user",
         cascade="all, delete-orphan",
-        lazy="select"
+        lazy="select",
     )
-    
+
     # Relations de traçabilité (1:N) - lazy dynamic pour performances
     notifications = relationship(
-        "Notification", 
-        back_populates="user", 
+        "Notification",
+        back_populates="user",
         cascade="all, delete-orphan",
         lazy="dynamic",
-    order_by="desc(Notification.date_envoi)"
+        order_by="desc(Notification.date_envoi)",
     )
-    
+
     historiques = relationship(
-        "HistoriqueIntervention", 
-        back_populates="user", 
+        "HistoriqueIntervention",
+        back_populates="user",
         cascade="all, delete-orphan",
         lazy="dynamic",
-        order_by="desc(HistoriqueIntervention.horodatage)"
+        order_by="desc(HistoriqueIntervention.horodatage)",
     )
-    
+
     mouvements_stock = relationship(
-        "MouvementStock", 
-        back_populates="user", 
+        "MouvementStock",
+        back_populates="user",
         cascade="all, delete-orphan",
         lazy="dynamic",
-        order_by="desc(MouvementStock.date_mouvement)"
+        order_by="desc(MouvementStock.date_mouvement)",
     )
 
     # Rapports générés par l'utilisateur (1:N)
@@ -176,10 +179,13 @@ class User(Base):
 
     def __repr__(self) -> str:
         """Représentation concise pour debugging."""
-        return f"<User(id={self.id}, username='{self.username}', role='{self.role.value}', active={self.is_active})>"
+        return (
+            f"<User(id={self.id}, username='{self.username}', "
+            f"role='{self.role.value}', active={self.is_active})>"
+        )
 
     # 🏷️ Propriétés métier pour RBAC et logique applicative
-    
+
     @property
     def is_admin(self) -> bool:
         """Vérifie si l'utilisateur est administrateur système."""
@@ -238,10 +244,7 @@ class User(Base):
     @property
     def is_account_locked(self) -> bool:
         """Vérifie si le compte est temporairement verrouillé."""
-        return (
-            self.locked_until is not None and 
-            self.locked_until > datetime.utcnow()
-        )
+        return self.locked_until is not None and self.locked_until > datetime.utcnow()
 
     @property
     def password_needs_change(self) -> bool:
@@ -268,18 +271,18 @@ class User(Base):
         """Retourne la date de dernière activité tracée."""
         dernier_historique = self.historiques.first()
         dernier_mouvement = self.mouvements_stock.first()
-        
+
         dates = [
             self.last_login,
             dernier_historique.horodatage if dernier_historique else None,
-            dernier_mouvement.date_mouvement if dernier_mouvement else None
+            dernier_mouvement.date_mouvement if dernier_mouvement else None,
         ]
-        
+
         dates_valides = [d for d in dates if d is not None]
         return max(dates_valides) if dates_valides else self.created_at
 
     # 🔧 Méthodes métier et gestion de session
-    
+
     def update_last_login(self) -> None:
         """Met à jour la date de dernière connexion et réinitialise les tentatives."""
         self.last_login = datetime.utcnow()
@@ -287,9 +290,10 @@ class User(Base):
         self.locked_until = None
 
     def increment_failed_login(self) -> None:
-        """Incrémente les tentatives de connexion échouées et verrouille si nécessaire."""
+        """Incrémente les tentatives de connexion échouées et verrouille
+        si nécessaire."""
         self.failed_login_attempts += 1
-        
+
         # Verrouillage après 5 tentatives échouées
         if self.failed_login_attempts >= 5:
             self.locked_until = datetime.utcnow() + timedelta(minutes=30)
@@ -318,43 +322,43 @@ class User(Base):
     def peut_acceder_intervention(self, intervention_id: int) -> bool:
         """
         Vérifie si l'utilisateur peut accéder à une intervention spécifique.
-        
+
         Args:
             intervention_id: ID de l'intervention à vérifier
-            
+
         Returns:
             bool: True si accès autorisé
         """
         if self.is_admin or self.is_responsable:
             return True
-            
+
         if self.is_technicien and self.technicien:
             # Technicien ne peut voir que ses interventions
             return any(
-                interv.id == intervention_id 
-                for interv in self.technicien.interventions
+                interv.id == intervention_id for interv in self.technicien.interventions
             )
-            
+
         if self.is_client and self.client:
             # Client ne peut voir que ses interventions
             return any(
-                interv.id == intervention_id 
-                for interv in self.client.interventions
+                interv.id == intervention_id for interv in self.client.interventions
             )
-            
+
         return False
 
-    def to_dict(self, include_sensitive: bool = False, include_relations: bool = False) -> Dict[str, Any]:
+    def to_dict(
+        self, include_sensitive: bool = False, include_relations: bool = False
+    ) -> Dict[str, Any]:
         """
         Sérialisation harmonisée en dictionnaire.
-        
+
         Args:
             include_sensitive: Inclut données sensibles (admin uniquement)
             include_relations: Inclut les données des relations liées
-            
+
         Returns:
             Dict contenant les données sérialisées
-            
+
         NOTE: Interface standardisée pour tous les modèles ERP
         """
         # Données de base (toujours incluses)
@@ -368,44 +372,61 @@ class User(Base):
             "display_name": self.display_name,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "last_login": self.last_login.isoformat() if self.last_login else None,
-            
             # Propriétés calculées utiles
             "is_staff": self.is_staff,
             "notifications_non_lues": self.notifications_non_lues,
-            "derniere_activite": self.derniere_activite.isoformat() if self.derniere_activite else None,
+            "derniere_activite": (
+                self.derniere_activite.isoformat() if self.derniere_activite else None
+            ),
         }
-        
+
         # Données sensibles (admin/responsable uniquement)
         if include_sensitive:
-            data.update({
-                "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-                "failed_login_attempts": self.failed_login_attempts,
-                "is_account_locked": self.is_account_locked,
-                "locked_until": self.locked_until.isoformat() if self.locked_until else None,
-                "password_needs_change": self.password_needs_change,
-                "password_changed_at": self.password_changed_at.isoformat() if self.password_changed_at else None,
-                "session_duration_minutes": int(self.session_duration.total_seconds() / 60) if self.session_duration else None,
-                
-                # Statistiques d'activité
-                "nb_notifications": self.notifications.count(),
-                "nb_historiques": self.historiques.count(),
-                "nb_mouvements_stock": self.mouvements_stock.count(),
-            })
-        
+            data.update(
+                {
+                    "updated_at": (
+                        self.updated_at.isoformat() if self.updated_at else None
+                    ),
+                    "failed_login_attempts": self.failed_login_attempts,
+                    "is_account_locked": self.is_account_locked,
+                    "locked_until": (
+                        self.locked_until.isoformat() if self.locked_until else None
+                    ),
+                    "password_needs_change": self.password_needs_change,
+                    "password_changed_at": (
+                        self.password_changed_at.isoformat()
+                        if self.password_changed_at
+                        else None
+                    ),
+                    "session_duration_minutes": (
+                        int(self.session_duration.total_seconds() / 60)
+                        if self.session_duration
+                        else None
+                    ),
+                    # Statistiques d'activité
+                    "nb_notifications": self.notifications.count(),
+                    "nb_historiques": self.historiques.count(),
+                    "nb_mouvements_stock": self.mouvements_stock.count(),
+                }
+            )
+
         # Relations détaillées (pour vues complètes)
         if include_relations:
-            data.update({
-                "technicien": self.technicien.to_dict() if self.technicien else None,
-                "client": self.client.to_dict() if self.client else None,
-                
-                # Permissions calculées
-                "permissions": {
-                    "can_manage_users": self.can_manage_users,
-                    "can_manage_interventions": self.can_manage_interventions,
-                    "can_execute_interventions": self.can_execute_interventions,
-                    "can_manage_stock": self.can_manage_stock,
-                    "can_view_reports": self.can_view_reports,
+            data.update(
+                {
+                    "technicien": (
+                        self.technicien.to_dict() if self.technicien else None
+                    ),
+                    "client": self.client.to_dict() if self.client else None,
+                    # Permissions calculées
+                    "permissions": {
+                        "can_manage_users": self.can_manage_users,
+                        "can_manage_interventions": self.can_manage_interventions,
+                        "can_execute_interventions": self.can_execute_interventions,
+                        "can_manage_stock": self.can_manage_stock,
+                        "can_view_reports": self.can_view_reports,
+                    },
                 }
-            })
-            
+            )
+
         return data

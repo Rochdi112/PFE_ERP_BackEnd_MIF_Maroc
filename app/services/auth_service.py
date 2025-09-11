@@ -1,10 +1,17 @@
 # app/services/auth_service.py
 
-from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
+from secrets import token_urlsafe
+
 from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
+
+from app.core.config import settings
+from app.core.security import create_access_token, verify_password
+from app.models.refresh_token import RefreshToken
 from app.models.user import User
 from app.schemas.user import TokenResponse
-from app.core.security import verify_password, create_access_token
+
 
 def authenticate_user(db: Session, email: str, password: str) -> TokenResponse:
     """
@@ -28,27 +35,63 @@ def authenticate_user(db: Session, email: str, password: str) -> TokenResponse:
     if not user or not verify_password(password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Email ou mot de passe incorrect"
+            detail="Email ou mot de passe incorrect",
         )
 
     if not user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Compte désactivé"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Compte désactivé"
         )
 
     access_token = create_access_token(
         data={
-            "sub": user.email,    # Identifiant principal (RFC JWT)
-            "role": getattr(user.role, "value", str(user.role)),  # Rôle RBAC sérialisé en string
-            "user_id": user.id    # Id utilisateur unique (utile pour tracking)
+            "sub": user.email,  # Identifiant principal (RFC JWT)
+            "role": getattr(
+                user.role, "value", str(user.role)
+            ),  # Rôle RBAC sérialisé en string
+            "user_id": user.id,  # Id utilisateur unique (utile pour tracking)
         }
     )
 
-    # ✅ Correction : retourner aussi token_type="bearer" pour compatibilité Pydantic/Swagger
-    return TokenResponse(access_token=access_token, token_type="bearer")
+    refresh_token = create_refresh_token(db, user.id)
 
-def authenticate_user_by_username(db: Session, username: str, password: str) -> TokenResponse:
+    # ✅ Correction : retourner aussi token_type="bearer" pour compatibilité
+    # Pydantic/Swagger
+    return TokenResponse(access_token=access_token, refresh_token=refresh_token, token_type="bearer")
+
+
+def create_refresh_token(db: Session, user_id: int) -> str:
+    """Crée un nouveau refresh token pour l'utilisateur"""
+    token = token_urlsafe(48)
+    refresh = RefreshToken(
+        user_id=user_id,
+        token=token,
+        expires_at=datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+    )
+    db.add(refresh)
+    db.commit()
+    return token
+
+
+def rotate_refresh_token(db: Session, old_token: str) -> str:
+    """Fait tourner un refresh token et retourne un nouveau"""
+    rt = db.query(RefreshToken).filter_by(token=old_token, revoked=False, rotated=False).first()
+    if not rt or rt.expires_at < datetime.utcnow():
+        raise HTTPException(status_code=401, detail="Refresh token invalide")
+    rt.rotated = True
+    db.commit()
+    return create_refresh_token(db, rt.user_id)
+
+
+def revoke_all_user_tokens(db: Session, user_id: int):
+    """Révoque tous les refresh tokens d'un utilisateur"""
+    db.query(RefreshToken).filter_by(user_id=user_id, revoked=False).update({"revoked": True})
+    db.commit()
+
+
+def authenticate_user_by_username(
+    db: Session, username: str, password: str
+) -> TokenResponse:
     """
     Authentifie via username + password (compatibilité tests legacy).
 
@@ -57,13 +100,11 @@ def authenticate_user_by_username(db: Session, username: str, password: str) -> 
     user = db.query(User).filter(User.username == username).first()
     if not user or not verify_password(password, user.hashed_password):
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Identifiants invalides"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Identifiants invalides"
         )
     if not user.is_active:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Compte désactivé"
+            status_code=status.HTTP_403_FORBIDDEN, detail="Compte désactivé"
         )
     access_token = create_access_token(
         data={
@@ -72,4 +113,5 @@ def authenticate_user_by_username(db: Session, username: str, password: str) -> 
             "user_id": user.id,
         }
     )
-    return TokenResponse(access_token=access_token, token_type="bearer")
+    refresh_token = create_refresh_token(db, user.id)
+    return TokenResponse(access_token=access_token, refresh_token=refresh_token, token_type="bearer")

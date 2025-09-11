@@ -12,6 +12,7 @@ SQLAlchemy
 python-jose[cryptography]   # JWT (obligatoire, version jose officielle)
 passlib[bcrypt]             # Hashing sécurisé (mot de passe)
 bcrypt==3.2.0               # pin to 3.x because passlib 1.7.4 expects bcrypt <4
+cryptography                # Chiffrement AES-Fernet pour documents
 
 # --- Pydantic (validation) ---
 pydantic>=2.6,<3.0         # Version stable, V1/2 support
@@ -34,6 +35,7 @@ pytest-cov                  # Coverage des tests
 pytest-html                 # Rapport HTML des tests
 httpx                       # Client HTTP pour tests API
 Faker                       # Génération de fausses données pour tests
+locust                      # Tests de performance et charge
 
 # --- Qualité de code ---
 black                       # Formatage de code

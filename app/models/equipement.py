@@ -18,30 +18,43 @@ Architecture:
 - Interface to_dict() standardisée pour API
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, Numeric, Index, ForeignKey, Enum
-from sqlalchemy.orm import relationship
-from datetime import datetime, timedelta
-from app.db.database import Base
-from typing import TYPE_CHECKING, Optional, Dict, Any, List
 import enum
+from datetime import datetime, timedelta
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
+    Integer,
+    Numeric,
+    String,
+    Text,
+)
+from sqlalchemy.orm import relationship
+
+from app.db.database import Base
 
 # NOTE: Import conditionnel pour éviter les imports circulaires
 if TYPE_CHECKING:
-    from .intervention import Intervention
-    from .planning import Planning
     from .client import Client
     from .contrat import Contrat
+    from .intervention import Intervention
+    from .planning import Planning
 
 
 class StatutEquipement(str, enum.Enum):
     """
     Statuts opérationnels des équipements.
-    
+
     - operationnel : en service normal
     - maintenance : en cours de maintenance
     - panne : hors service suite à défaillance
     - retire : retiré du service définitivement
     """
+
     operationnel = "operationnel"
     maintenance = "maintenance"
     panne = "panne"
@@ -51,12 +64,13 @@ class StatutEquipement(str, enum.Enum):
 class CriticiteEquipement(str, enum.Enum):
     """
     Niveaux de criticité métier des équipements.
-    
+
     - critique : arrêt de production si panne
     - important : impact significatif sur production
     - standard : impact modéré
     - non_critique : impact minimal
     """
+
     critique = "critique"
     important = "important"
     standard = "standard"
@@ -66,7 +80,7 @@ class CriticiteEquipement(str, enum.Enum):
 class Equipement(Base):
     """
     Modèle Equipement - Patrimoine technique de l'entreprise.
-    
+
     Gestion complète du parc matériel avec :
     - Identification unique et caractéristiques techniques
     - Localisation géographique et responsabilités
@@ -74,28 +88,29 @@ class Equipement(Base):
     - Cycles de maintenance préventive
     - Historique des interventions et performances
     - Relations contractuelles et propriété client
-    
+
     Relations clés :
     - 1:N avec Interventions (historique maintenance)
     - 1:N avec Planning (planification préventive)
     - N:1 avec Client (propriétaire/responsable)
     - N:1 avec Contrat (couverture contractuelle)
-    
+
     Performances :
     - Index composites sur type+localisation, statut+criticité
     - Relations lazy=dynamic pour collections volumineuses
     - Propriétés calculées mises en cache applicatif
     """
+
     __tablename__ = "equipements"
     # Autorise les annotations non-Mapped legacy (compat SQLAlchemy 2.0)
     __allow_unmapped__ = True
 
     # NOTE: Index composites pour requêtes métier fréquentes
     __table_args__ = (
-        Index('idx_equipement_type_localisation', 'type_equipement', 'localisation'),
-        Index('idx_equipement_statut_criticite', 'statut', 'criticite'),
-        Index('idx_equipement_client_statut', 'client_id', 'statut'),
-        Index('idx_equipement_created_type', 'created_at', 'type_equipement'),
+        Index("idx_equipement_type_localisation", "type_equipement", "localisation"),
+        Index("idx_equipement_statut_criticite", "statut", "criticite"),
+        Index("idx_equipement_client_statut", "client_id", "statut"),
+        Index("idx_equipement_created_type", "created_at", "type_equipement"),
     )
 
     # Clé primaire
@@ -105,77 +120,100 @@ class Equipement(Base):
     nom = Column(String(255), nullable=False, index=True)
     numero_serie = Column(String(100), unique=True, nullable=True, index=True)
     code_interne = Column(String(50), unique=True, nullable=True, index=True)
+    type = Column(String(100), nullable=False)  # For backward compatibility
     type_equipement = Column(String(100), nullable=False, index=True)
     marque = Column(String(100), nullable=True)
     modele = Column(String(100), nullable=True)
-    
+
     # Localisation et environnement
     localisation = Column(String(255), nullable=False, index=True)
     batiment = Column(String(100), nullable=True)
     etage = Column(String(20), nullable=True)
     zone = Column(String(100), nullable=True)
-    
+
     # Statut opérationnel
-    statut = Column(Enum(StatutEquipement), default=StatutEquipement.operationnel, nullable=False, index=True)
-    criticite = Column(Enum(CriticiteEquipement), default=CriticiteEquipement.standard, nullable=False, index=True)
-    
+    statut = Column(
+        String(20),
+        default="operationnel",
+        nullable=False,
+        index=True,
+    )
+    criticite = Column(
+        String(20),
+        default="standard",
+        nullable=False,
+        index=True,
+    )
+
     # Caractéristiques techniques
     description = Column(Text, nullable=True)
     specifications_techniques = Column(Text, nullable=True)
     puissance = Column(Numeric(10, 2), nullable=True)  # en kW
     poids = Column(Numeric(10, 2), nullable=True)  # en kg
-    
+
     # Maintenance et cycles
     frequence_entretien_jours = Column(Integer, nullable=True)  # Cycles en jours
     duree_garantie_mois = Column(Integer, nullable=True)  # Garantie en mois
     cout_acquisition = Column(Integer, nullable=True)  # En centimes d'euro
-    
+
     # Métadonnées temporelles
     date_acquisition = Column(DateTime, nullable=True)
     date_mise_en_service = Column(DateTime, nullable=True)
     date_fin_garantie = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
-    
+    updated_at = Column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+
     # Relations métier
-    client_id = Column(Integer, ForeignKey("clients.id", ondelete="SET NULL"), nullable=True, index=True)
-    contrat_id = Column(Integer, ForeignKey("contrats.id", ondelete="SET NULL"), nullable=True, index=True)
+    client_id = Column(
+        Integer,
+        ForeignKey("clients.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    contrat_id = Column(
+        Integer,
+        ForeignKey("contrats.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
 
     # 🔗 Relations ORM optimisées
-    
+
     # Relations principales (N:1)
     client: Optional["Client"] = relationship(
-        "Client", 
-        back_populates="equipements",
-        lazy="select"
+        "Client", back_populates="equipements", lazy="select"
     )
-    
+
     contrat: Optional["Contrat"] = relationship(
-        "Contrat", 
-    back_populates="equipements",
-        lazy="select"
+        "Contrat", back_populates="equipements", lazy="select"
     )
-    
+
     # Relations de maintenance (1:N) - lazy dynamic pour performances
     interventions = relationship(
-        "Intervention", 
-        back_populates="equipement", 
+        "Intervention",
+        back_populates="equipement",
         cascade="all, delete-orphan",
         lazy="dynamic",
-        order_by="desc(Intervention.date_creation)"
+        order_by="desc(Intervention.date_creation)",
     )
-    
+
     plannings = relationship(
-        "Planning", 
-        back_populates="equipement", 
+        "Planning",
+        back_populates="equipement",
         cascade="all, delete-orphan",
         lazy="dynamic",
-    order_by="Planning.prochaine_date"
+        order_by="Planning.prochaine_date",
     )
 
     def __repr__(self) -> str:
         """Représentation concise pour debugging."""
-        return f"<Equipement(id={self.id}, nom='{self.nom}', type='{self.type_equipement}', statut='{self.statut.value}')>"
+        return (
+            f"<Equipement(id={self.id}, nom='{self.nom}', "
+            f"type='{self.type_equipement}', "
+            f"statut='{self.statut.value}')>"
+        )
 
     # 🏷️ Propriétés métier et calculs KPI
 
@@ -200,9 +238,20 @@ class Equipement(Base):
             def _normalize_text(x: str) -> str:
                 s = str(x).strip().lower()
                 for a, b in (
-                    ("é", "e"), ("è", "e"), ("ê", "e"), ("ë", "e"),
-                    ("à", "a"), ("â", "a"), ("ä", "a"), ("ô", "o"), ("ö", "o"),
-                    ("û", "u"), ("ü", "u"), ("î", "i"), ("ï", "i"), ("ç", "c"),
+                    ("é", "e"),
+                    ("è", "e"),
+                    ("ê", "e"),
+                    ("ë", "e"),
+                    ("à", "a"),
+                    ("â", "a"),
+                    ("ä", "a"),
+                    ("ô", "o"),
+                    ("ö", "o"),
+                    ("û", "u"),
+                    ("ü", "u"),
+                    ("î", "i"),
+                    ("ï", "i"),
+                    ("ç", "c"),
                 ):
                     s = s.replace(a, b)
                 return s
@@ -243,7 +292,11 @@ class Equipement(Base):
 
     @property
     def frequence_entretien(self) -> Optional[str]:
-        return str(self.frequence_entretien_jours) if self.frequence_entretien_jours is not None else None
+        return (
+            str(self.frequence_entretien_jours)
+            if self.frequence_entretien_jours is not None
+            else None
+        )
 
     @property
     def est_en_panne(self) -> bool:
@@ -287,19 +340,19 @@ class Equipement(Base):
         """Calcule la date de prochaine maintenance préventive."""
         if not self.frequence_entretien_jours:
             return None
-            
+
         # Récupère la dernière intervention préventive
         derniere_preventive = self.interventions.filter_by(
             type_intervention="preventive"
         ).first()
-        
+
         if derniere_preventive and derniere_preventive.date_cloture:
             base_date = derniere_preventive.date_cloture
         elif self.date_mise_en_service:
             base_date = self.date_mise_en_service
         else:
             base_date = self.created_at
-            
+
         return base_date + timedelta(days=self.frequence_entretien_jours)
 
     @property
@@ -338,7 +391,9 @@ class Equipement(Base):
         total = 0.0
         for intervention in self.interventions:
             if intervention.cout_reel:
-                total += float(intervention.cout_reel) / 100  # Conversion centimes -> euros
+                total += (
+                    float(intervention.cout_reel) / 100
+                )  # Conversion centimes -> euros
         return round(total, 2)
 
     @property
@@ -366,7 +421,7 @@ class Equipement(Base):
             CriticiteEquipement.critique: 4,
             CriticiteEquipement.important: 3,
             CriticiteEquipement.standard: 2,
-            CriticiteEquipement.non_critique: 1
+            CriticiteEquipement.non_critique: 1,
         }
         return mapping.get(self.criticite, 0)
 
@@ -424,21 +479,21 @@ class Equipement(Base):
     def programmer_maintenance_preventive(self) -> Optional[datetime]:
         """
         Retourne la date recommandée pour programmer la prochaine maintenance.
-        
+
         Returns:
             datetime: Date recommandée ou None si pas de cycle défini
         """
         if not self.frequence_entretien_jours:
             return None
-            
+
         prochaine = self.prochaine_maintenance_calculee
         if not prochaine:
             return None
-            
+
         # Ajouter une marge de sécurité pour les équipements critiques
         if self.est_critique:
             prochaine -= timedelta(days=7)  # 1 semaine d'avance
-            
+
         return prochaine
 
     def get_historique_pannes(self) -> List["Intervention"]:
@@ -447,9 +502,9 @@ class Equipement(Base):
 
     def get_planning_maintenance(self) -> List["Planning"]:
         """Retourne les maintenances planifiées à venir."""
-        return list(self.plannings.filter(
-            Planning.date_prevue >= datetime.utcnow()
-        ).all())
+        return list(
+            self.plannings.filter(Planning.date_prevue >= datetime.utcnow()).all()
+        )
 
     def peut_etre_supprime(self) -> bool:
         """Vérifie si l'équipement peut être supprimé du système."""
@@ -457,20 +512,22 @@ class Equipement(Base):
         interventions_actives = self.interventions.filter(
             Intervention.statut.in_(["ouverte", "affectee", "en_cours"])
         ).count()
-        
+
         return interventions_actives == 0 and self.statut == StatutEquipement.retire
 
-    def to_dict(self, include_sensitive: bool = False, include_relations: bool = False) -> Dict[str, Any]:
+    def to_dict(
+        self, include_sensitive: bool = False, include_relations: bool = False
+    ) -> Dict[str, Any]:
         """
         Sérialisation harmonisée en dictionnaire.
-        
+
         Args:
             include_sensitive: Inclut données sensibles/coûts (admin/responsable)
             include_relations: Inclut les données des relations liées
-            
+
         Returns:
             Dict contenant les données sérialisées
-            
+
         NOTE: Interface standardisée pour tous les modèles ERP
         """
         # Données de base (toujours incluses)
@@ -488,7 +545,6 @@ class Equipement(Base):
             "criticite": self.criticite.value,
             "description": self.description,
             "created_at": self.created_at.isoformat() if self.created_at else None,
-            
             # Propriétés calculées utiles
             "identificateur_complet": self.identificateur_complet,
             "est_operationnel": self.est_operationnel,
@@ -499,49 +555,82 @@ class Equipement(Base):
             "age_en_annees": self.age_en_annees,
             "maintenance_en_retard": self.maintenance_en_retard,
             "nb_interventions_total": self.nb_interventions_total,
-            "derniere_intervention_date": self.derniere_intervention_date.isoformat() if self.derniere_intervention_date else None,
+            "derniere_intervention_date": (
+                self.derniere_intervention_date.isoformat()
+                if self.derniere_intervention_date
+                else None
+            ),
         }
-        
+
         # Données sensibles (coûts, détails techniques)
         if include_sensitive:
-            data.update({
-                "updated_at": self.updated_at.isoformat() if self.updated_at else None,
-                "specifications_techniques": self.specifications_techniques,
-                "puissance": float(self.puissance) if self.puissance else None,
-                "poids": float(self.poids) if self.poids else None,
-                "cout_acquisition": float(self.cout_acquisition) / 100 if self.cout_acquisition else None,
-                "date_acquisition": self.date_acquisition.isoformat() if self.date_acquisition else None,
-                "date_mise_en_service": self.date_mise_en_service.isoformat() if self.date_mise_en_service else None,
-                "date_fin_garantie": self.date_fin_garantie.isoformat() if self.date_fin_garantie else None,
-                "frequence_entretien_jours": self.frequence_entretien_jours,
-                "duree_garantie_mois": self.duree_garantie_mois,
-                
-                # KPI de maintenance
-                "prochaine_maintenance_calculee": self.prochaine_maintenance_calculee.isoformat() if self.prochaine_maintenance_calculee else None,
-                "nb_interventions_correctives": self.nb_interventions_correctives,
-                "nb_interventions_preventives": self.nb_interventions_preventives,
-                "taux_pannes_annuel": self.taux_pannes_annuel,
-                "cout_maintenance_total": self.cout_maintenance_total,
-                "niveau_criticite_numerique": self.niveau_criticite_numerique,
-            })
-        
+            data.update(
+                {
+                    "updated_at": (
+                        self.updated_at.isoformat() if self.updated_at else None
+                    ),
+                    "specifications_techniques": self.specifications_techniques,
+                    "puissance": float(self.puissance) if self.puissance else None,
+                    "poids": float(self.poids) if self.poids else None,
+                    "cout_acquisition": (
+                        float(self.cout_acquisition) / 100
+                        if self.cout_acquisition
+                        else None
+                    ),
+                    "date_acquisition": (
+                        self.date_acquisition.isoformat()
+                        if self.date_acquisition
+                        else None
+                    ),
+                    "date_mise_en_service": (
+                        self.date_mise_en_service.isoformat()
+                        if self.date_mise_en_service
+                        else None
+                    ),
+                    "date_fin_garantie": (
+                        self.date_fin_garantie.isoformat()
+                        if self.date_fin_garantie
+                        else None
+                    ),
+                    "frequence_entretien_jours": self.frequence_entretien_jours,
+                    "duree_garantie_mois": self.duree_garantie_mois,
+                    # KPI de maintenance
+                    "prochaine_maintenance_calculee": (
+                        self.prochaine_maintenance_calculee.isoformat()
+                        if self.prochaine_maintenance_calculee
+                        else None
+                    ),
+                    "nb_interventions_correctives": self.nb_interventions_correctives,
+                    "nb_interventions_preventives": self.nb_interventions_preventives,
+                    "taux_pannes_annuel": self.taux_pannes_annuel,
+                    "cout_maintenance_total": self.cout_maintenance_total,
+                    "niveau_criticite_numerique": self.niveau_criticite_numerique,
+                }
+            )
+
         # Relations détaillées (pour vues complètes)
         if include_relations:
-            data.update({
-                "client": self.client.to_dict() if self.client else None,
-                "contrat": self.contrat.to_dict() if self.contrat else None,
-                "client_id": self.client_id,
-                "contrat_id": self.contrat_id,
-                
-                # Historique récent
-                "derniere_intervention": self.derniere_intervention.to_dict() if self.derniere_intervention else None,
-                "planning_maintenance": [p.to_dict() for p in self.get_planning_maintenance()[:5]],  # 5 prochaines
-                
-                # Métadonnées système
-                "peut_etre_supprime": self.peut_etre_supprime(),
-                "batiment": self.batiment,
-                "etage": self.etage,
-                "zone": self.zone,
-            })
-            
+            data.update(
+                {
+                    "client": self.client.to_dict() if self.client else None,
+                    "contrat": self.contrat.to_dict() if self.contrat else None,
+                    "client_id": self.client_id,
+                    "contrat_id": self.contrat_id,
+                    # Historique récent
+                    "derniere_intervention": (
+                        self.derniere_intervention.to_dict()
+                        if self.derniere_intervention
+                        else None
+                    ),
+                    "planning_maintenance": [
+                        p.to_dict() for p in self.get_planning_maintenance()[:5]
+                    ],  # 5 prochaines
+                    # Métadonnées système
+                    "peut_etre_supprime": self.peut_etre_supprime(),
+                    "batiment": self.batiment,
+                    "etage": self.etage,
+                    "zone": self.zone,
+                }
+            )
+
         return data

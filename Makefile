@@ -127,3 +127,9 @@ ci:
 	make lint
 	make report
 	@echo "🎉 Pipeline terminé !"
+
+# 💾 Sauvegarde de base de données
+backup:
+	@echo "💾 Création de la sauvegarde PostgreSQL..."
+	./scripts/backup_postgres.sh
+	@echo "✅ Sauvegarde terminée"

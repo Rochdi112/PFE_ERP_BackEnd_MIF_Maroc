@@ -1,43 +1,45 @@
 # app/models/stock.py
 
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Numeric, Boolean, Text, Enum
-from sqlalchemy.orm import relationship
-from datetime import datetime
-from app.db.database import Base
 import enum
+from datetime import datetime
+from typing import TYPE_CHECKING, Any, Dict, Optional
+
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
+    Integer,
+    Numeric,
+    String,
+    Text,
+)
+from sqlalchemy.orm import relationship
+
+from app.db.database import Base
 
 
 class TypeMouvement(str, enum.Enum):
     """Types de mouvements de stock"""
+
     entree = "entree"
     sortie = "sortie"
     ajustement = "ajustement"
     retour = "retour"
 
 
-
 """
-Modèles Stock : gestion des pièces détachées, mouvements de stock, et traçabilité d'utilisation.
+Modèles Stock : gestion des pièces détachées, mouvements de stock, et
+traçabilité d'utilisation.
 Relations : 1:N entre PieceDetachee et MouvementStock, N:N via InterventionPiece.
 Exemple : suivi inventaire, audit, alertes, reporting.
 """
 
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Numeric, Boolean, Text, Enum, Index
-from sqlalchemy.orm import relationship
-from datetime import datetime
-from app.db.database import Base
-from typing import TYPE_CHECKING, Optional, Dict, Any
-import enum
-
 if TYPE_CHECKING:
-    from .intervention import Intervention
-    from .user import User
+    pass
 
-class TypeMouvement(str, enum.Enum):
-    entree = "entree"
-    sortie = "sortie"
-    ajustement = "ajustement"
-    retour = "retour"
 
 class PieceDetachee(Base):
     """
@@ -45,10 +47,11 @@ class PieceDetachee(Base):
     - Informations produit, gestion du stock, prix, relations mouvements/interventions
     - Préparé pour extension (audit, alertes, logs)
     """
+
     __tablename__ = "pieces_detachees"
     __table_args__ = (
-        Index('idx_piece_reference', 'reference'),
-        Index('idx_piece_stock', 'stock_actuel', 'stock_minimum'),
+        Index("idx_piece_reference", "reference"),
+        Index("idx_piece_stock", "stock_actuel", "stock_minimum"),
     )
 
     id: int = Column(Integer, primary_key=True, index=True)
@@ -69,8 +72,12 @@ class PieceDetachee(Base):
     rangee: Optional[str] = Column(String(50), nullable=True)
     etagere: Optional[str] = Column(String(50), nullable=True)
     is_active: bool = Column(Boolean, default=True, nullable=False, index=True)
-    date_creation: datetime = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
-    date_modification: datetime = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    date_creation: datetime = Column(
+        DateTime, default=datetime.utcnow, nullable=False, index=True
+    )
+    date_modification: datetime = Column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
     derniere_entree: Optional[datetime] = Column(DateTime, nullable=True)
     derniere_sortie: Optional[datetime] = Column(DateTime, nullable=True)
 
@@ -78,16 +85,19 @@ class PieceDetachee(Base):
         "MouvementStock",
         back_populates="piece_detachee",
         cascade="all, delete-orphan",
-        order_by="MouvementStock.date_mouvement.desc()"
+        order_by="MouvementStock.date_mouvement.desc()",
     )
     interventions_pieces = relationship(
         "InterventionPiece",
         back_populates="piece_detachee",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
     )
 
     def __repr__(self) -> str:
-        return f"<PieceDetachee(id={self.id}, ref='{self.reference}', stock={self.stock_actuel})>"
+        return (
+            f"<PieceDetachee(id={self.id}, ref='{self.reference}', "
+            f"stock={self.stock_actuel})>"
+        )
 
     @property
     def est_en_rupture(self) -> bool:
@@ -112,7 +122,9 @@ class PieceDetachee(Base):
     def peut_prelever(self, quantite: int) -> bool:
         return self.stock_actuel >= quantite
 
-    def to_dict(self, include_sensitive: bool = False, include_relations: bool = False) -> Dict[str, Any]:
+    def to_dict(
+        self, include_sensitive: bool = False, include_relations: bool = False
+    ) -> Dict[str, Any]:
         data = {
             "id": self.id,
             "nom": self.nom,
@@ -132,21 +144,30 @@ class PieceDetachee(Base):
             "rangee": self.rangee,
             "etagere": self.etagere,
             "is_active": self.is_active,
-            "date_creation": self.date_creation.isoformat() if self.date_creation else None,
-            "date_modification": self.date_modification.isoformat() if self.date_modification else None,
-            "derniere_entree": self.derniere_entree.isoformat() if self.derniere_entree else None,
-            "derniere_sortie": self.derniere_sortie.isoformat() if self.derniere_sortie else None,
+            "date_creation": (
+                self.date_creation.isoformat() if self.date_creation else None
+            ),
+            "date_modification": (
+                self.date_modification.isoformat() if self.date_modification else None
+            ),
+            "derniere_entree": (
+                self.derniere_entree.isoformat() if self.derniere_entree else None
+            ),
+            "derniere_sortie": (
+                self.derniere_sortie.isoformat() if self.derniere_sortie else None
+            ),
             "est_en_rupture": self.est_en_rupture,
             "est_stock_bas": self.est_stock_bas,
             "valeur_stock": self.valeur_stock,
             "pourcentage_stock": self.pourcentage_stock,
         }
         if include_relations:
-            data["mouvements"] = [m.to_dict() for m in self.mouvements] if self.mouvements else []
+            data["mouvements"] = (
+                [m.to_dict() for m in self.mouvements] if self.mouvements else []
+            )
         return data
 
     # NOTE: Préparé pour extension future (audit, alertes, logs, etc.)
-
 
 
 class MouvementStock(Base):
@@ -155,31 +176,57 @@ class MouvementStock(Base):
     - Type de mouvement, quantité, traçabilité, motif, intervention liée
     - Préparé pour extension (audit, logs, alertes)
     """
+
     __tablename__ = "mouvements_stock"
     __table_args__ = (
-        Index('idx_mouvement_piece_date', 'piece_detachee_id', 'date_mouvement'),
-        Index('idx_mouvement_type', 'type_mouvement'),
+        Index("idx_mouvement_piece_date", "piece_detachee_id", "date_mouvement"),
+        Index("idx_mouvement_type", "type_mouvement"),
     )
 
     id: int = Column(Integer, primary_key=True, index=True)
-    type_mouvement: TypeMouvement = Column(Enum(TypeMouvement), nullable=False, index=True)
+    type_mouvement: TypeMouvement = Column(
+        Enum(TypeMouvement), nullable=False, index=True
+    )
     quantite: int = Column(Integer, nullable=False)
     stock_avant: int = Column(Integer, nullable=False)
     stock_apres: int = Column(Integer, nullable=False)
     motif: Optional[str] = Column(String(255), nullable=True)
     commentaire: Optional[str] = Column(Text, nullable=True)
-    date_mouvement: datetime = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
-    piece_detachee_id: int = Column(Integer, ForeignKey("pieces_detachees.id", ondelete="CASCADE"), nullable=False, index=True)
-    intervention_id: Optional[int] = Column(Integer, ForeignKey("interventions.id", ondelete="SET NULL"), nullable=True, index=True)
-    user_id: Optional[int] = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
-    piece_detachee = relationship("PieceDetachee", back_populates="mouvements", lazy="joined")
-    intervention = relationship("Intervention", back_populates="mouvements_stock", lazy="select")
+    date_mouvement: datetime = Column(
+        DateTime, default=datetime.utcnow, nullable=False, index=True
+    )
+    piece_detachee_id: int = Column(
+        Integer,
+        ForeignKey("pieces_detachees.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    intervention_id: Optional[int] = Column(
+        Integer,
+        ForeignKey("interventions.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    user_id: Optional[int] = Column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    piece_detachee = relationship(
+        "PieceDetachee", back_populates="mouvements", lazy="joined"
+    )
+    intervention = relationship(
+        "Intervention", back_populates="mouvements_stock", lazy="select"
+    )
     user = relationship("User", back_populates="mouvements_stock", lazy="select")
 
     def __repr__(self) -> str:
-        return f"<MouvementStock(id={self.id}, type='{self.type_mouvement.value}', qty={self.quantite})>"
+        return (
+            f"<MouvementStock(id={self.id}, "
+            f"type='{self.type_mouvement.value}', qty={self.quantite})>"
+        )
 
-    def to_dict(self, include_sensitive: bool = False, include_relations: bool = False) -> Dict[str, Any]:
+    def to_dict(
+        self, include_sensitive: bool = False, include_relations: bool = False
+    ) -> Dict[str, Any]:
         data = {
             "id": self.id,
             "type_mouvement": self.type_mouvement.value,
@@ -188,17 +235,20 @@ class MouvementStock(Base):
             "stock_apres": self.stock_apres,
             "motif": self.motif,
             "commentaire": self.commentaire,
-            "date_mouvement": self.date_mouvement.isoformat() if self.date_mouvement else None,
+            "date_mouvement": (
+                self.date_mouvement.isoformat() if self.date_mouvement else None
+            ),
             "piece_detachee_id": self.piece_detachee_id,
             "intervention_id": self.intervention_id,
             "user_id": self.user_id,
         }
         if include_relations:
-            data["piece_detachee"] = self.piece_detachee.to_dict() if self.piece_detachee else None
+            data["piece_detachee"] = (
+                self.piece_detachee.to_dict() if self.piece_detachee else None
+            )
         return data
 
     # NOTE: Préparé pour extension future (audit, logs, alertes, etc.)
-
 
 
 class InterventionPiece(Base):
@@ -207,32 +257,59 @@ class InterventionPiece(Base):
     - Trace l'utilisation des pièces dans les interventions, quantité, date, commentaire
     - Préparé pour extension (audit, logs, RGPD)
     """
+
     __tablename__ = "interventions_pieces"
     __table_args__ = (
-        Index('idx_intervention_piece', 'intervention_id', 'piece_detachee_id'),
+        Index("idx_intervention_piece", "intervention_id", "piece_detachee_id"),
     )
 
-    intervention_id: int = Column(Integer, ForeignKey("interventions.id", ondelete="CASCADE"), primary_key=True, index=True)
-    piece_detachee_id: int = Column(Integer, ForeignKey("pieces_detachees.id", ondelete="CASCADE"), primary_key=True, index=True)
+    intervention_id: int = Column(
+        Integer,
+        ForeignKey("interventions.id", ondelete="CASCADE"),
+        primary_key=True,
+        index=True,
+    )
+    piece_detachee_id: int = Column(
+        Integer,
+        ForeignKey("pieces_detachees.id", ondelete="CASCADE"),
+        primary_key=True,
+        index=True,
+    )
     quantite_utilisee: int = Column(Integer, nullable=False, default=1)
-    date_utilisation: datetime = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+    date_utilisation: datetime = Column(
+        DateTime, default=datetime.utcnow, nullable=False, index=True
+    )
     commentaire: Optional[str] = Column(Text, nullable=True)
-    intervention = relationship("Intervention", back_populates="pieces_utilisees", lazy="select")
-    piece_detachee = relationship("PieceDetachee", back_populates="interventions_pieces", lazy="select")
+    intervention = relationship(
+        "Intervention", back_populates="pieces_utilisees", lazy="select"
+    )
+    piece_detachee = relationship(
+        "PieceDetachee", back_populates="interventions_pieces", lazy="select"
+    )
 
     def __repr__(self) -> str:
-        return f"<InterventionPiece(intervention={self.intervention_id}, piece={self.piece_detachee_id}, qty={self.quantite_utilisee})>"
+        return (
+            f"<InterventionPiece(intervention={self.intervention_id}, "
+            f"piece={self.piece_detachee_id}, "
+            f"qty={self.quantite_utilisee})>"
+        )
 
-    def to_dict(self, include_sensitive: bool = False, include_relations: bool = False) -> Dict[str, Any]:
+    def to_dict(
+        self, include_sensitive: bool = False, include_relations: bool = False
+    ) -> Dict[str, Any]:
         data = {
             "intervention_id": self.intervention_id,
             "piece_detachee_id": self.piece_detachee_id,
             "quantite_utilisee": self.quantite_utilisee,
-            "date_utilisation": self.date_utilisation.isoformat() if self.date_utilisation else None,
+            "date_utilisation": (
+                self.date_utilisation.isoformat() if self.date_utilisation else None
+            ),
             "commentaire": self.commentaire,
         }
         if include_relations:
-            data["piece_detachee"] = self.piece_detachee.to_dict() if self.piece_detachee else None
+            data["piece_detachee"] = (
+                self.piece_detachee.to_dict() if self.piece_detachee else None
+            )
         return data
 
     # NOTE: Préparé pour extension future (audit, logs, RGPD, etc.)

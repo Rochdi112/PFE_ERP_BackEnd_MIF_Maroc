@@ -1,0 +1,16 @@
+# Git LFS
+*.jpg filter=lfs diff=lfs merge=lfs -text
+*.png filter=lfs diff=lfs merge=lfs -text
+*.gif filter=lfs diff=lfs merge=lfs -text
+*.mp4 filter=lfs diff=lfs merge=lfs -text
+*.pdf filter=lfs diff=lfs merge=lfs -text
+
+# Text files
+*.md text
+*.txt text
+*.py text
+*.js text
+*.ts text
+*.json text
+*.yml text
+*.yaml text

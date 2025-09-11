@@ -12,7 +12,7 @@ Ce package contient tous les modèles de données de l'ERP de maintenance :
 
 Organisation des modèles :
 - User/Technicien/Client : Gestion utilisateurs et authentification
-- Equipement/Intervention : Cœur métier maintenance industrielle  
+- Equipement/Intervention : Cœur métier maintenance industrielle
 - Planning/Notification : Orchestration et communication
 - Document/Historique : Traçabilité et audit complet
 - Stock/Contrat : Gestion économique et commerciale
@@ -26,104 +26,101 @@ NOTE: Tous les modèles suivent les conventions d'excellence :
 - Cascade et contraintes d'intégrité robustes
 """
 
-# Modèles utilisateurs et authentification
-from .user import User, UserRole
-
-# Modèles techniciens et compétences  
-from .technicien import (
-    Technicien, 
-    Competence, 
-    technicien_competence,
-    DisponibiliteTechnicien,
-    NiveauCompetence
-)
-
 # Modèles clients et relations commerciales
-from .client import Client, TypeClient, NiveauService
+from .client import Client, NiveauService, TypeClient
 
-# Modèles équipements et patrimoine
-from .equipement import (
-    Equipement, 
-    StatutEquipement, 
-    CriticiteEquipement
-)
-
-# Modèles interventions - cœur métier
-from .intervention import (
-    Intervention, 
-    InterventionType, 
-    StatutIntervention,
-    PrioriteIntervention
-)
-
-# Modèles planification et organisation
-from .planning import Planning
+# Modèles contractuels et commerciaux
+from .contrat import Contrat, Facture, StatutContrat, TypeContrat
 
 # Modèles documentation et fichiers
 from .document import Document
 
-# Modèles notification et communication
-from .notification import Notification
+# Modèles équipements et patrimoine
+from .equipement import CriticiteEquipement, Equipement, StatutEquipement
 
 # Modèles audit et traçabilité
 from .historique import HistoriqueIntervention
 
-# Modèles contractuels et commerciaux
-from .contrat import Contrat, Facture, TypeContrat, StatutContrat
-
-# Modèles stock et logistique
-from .stock import (
-    PieceDetachee, 
-    MouvementStock, 
-    InterventionPiece, 
-    TypeMouvement
+# Modèles interventions - cœur métier
+from .intervention import (
+    Intervention,
+    InterventionType,
+    PrioriteIntervention,
+    StatutIntervention,
 )
+
+# Modèles notification et communication
+from .notification import Notification
+
+# Modèles planification et organisation
+from .planning import Planning
 
 # Modèles reporting et business intelligence
-from .report import (
-    Report, 
-    ReportSchedule, 
-    ReportStatus, 
-    ReportType, 
-    ReportFormat
+from .report import Report, ReportFormat, ReportSchedule, ReportStatus, ReportType
+
+# Modèles stock et logistique
+from .stock import InterventionPiece, MouvementStock, PieceDetachee, TypeMouvement
+
+# Modèles techniciens et compétences
+from .technicien import (
+    Competence,
+    DisponibiliteTechnicien,
+    NiveauCompetence,
+    Technicien,
+    technicien_competence,
 )
+
+# Modèles utilisateurs et authentification
+from .user import User, UserRole
+from .refresh_token import RefreshToken
 
 # Export des classes principales pour utilisation externe
 __all__ = [
     # Authentification et utilisateurs
-    "User", "UserRole",
-    
+    "User",
+    "UserRole",
+    "RefreshToken",
     # Personnel technique
-    "Technicien", "Competence", "technicien_competence",
-    "DisponibiliteTechnicien", "NiveauCompetence",
-    
+    "Technicien",
+    "Competence",
+    "technicien_competence",
+    "DisponibiliteTechnicien",
+    "NiveauCompetence",
     # Clients et commercial
-    "Client", "TypeClient", "NiveauService",
-    
+    "Client",
+    "TypeClient",
+    "NiveauService",
     # Patrimoine technique
-    "Equipement", "StatutEquipement", "CriticiteEquipement",
-    
+    "Equipement",
+    "StatutEquipement",
+    "CriticiteEquipement",
     # Interventions - métier principal
-    "Intervention", "InterventionType", "StatutIntervention", "PrioriteIntervention",
-    
+    "Intervention",
+    "InterventionType",
+    "StatutIntervention",
+    "PrioriteIntervention",
     # Organisation et planification
     "Planning",
-    
     # Documentation
     "Document",
-    
     # Communication
-    "Notification", 
-    
+    "Notification",
     # Audit et traçabilité
     "HistoriqueIntervention",
-    
     # Commercial et contrats
-    "Contrat", "Facture", "TypeContrat", "StatutContrat",
-    
+    "Contrat",
+    "Facture",
+    "TypeContrat",
+    "StatutContrat",
     # Logistique et stock
-    "PieceDetachee", "MouvementStock", "InterventionPiece", "TypeMouvement",
-    
+    "PieceDetachee",
+    "MouvementStock",
+    "InterventionPiece",
+    "TypeMouvement",
     # Business Intelligence
-    "Report", "ReportSchedule", "ReportStatus", "ReportType", "ReportFormat"
+    "Report",
+    "ReportSchedule",
+    "ReportStatus",
+    "ReportType",
+    "ReportFormat",
 ]

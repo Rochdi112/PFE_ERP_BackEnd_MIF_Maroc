@@ -1,12 +1,15 @@
 def test_save_uploaded_file_and_create_document(tmp_path, db_session, monkeypatch):
-    from app.services.document_service import save_uploaded_file, create_document
+    pass
+
     from app.core.config import settings
-    from types import SimpleNamespace
+    from app.services.document_service import create_document, save_uploaded_file
 
     monkeypatch.setattr(settings, "UPLOAD_DIRECTORY", str(tmp_path))
+
     class BytesReader:
         def __init__(self, b: bytes):
             self._b = b
+
         def read(self):
             return self._b
 
@@ -20,7 +23,9 @@ def test_save_uploaded_file_and_create_document(tmp_path, db_session, monkeypatc
 
     # create document record (may require an intervention/user; be permissive)
     try:
-        doc = create_document(db_session, {"nom": "d1", "chemin": path, "intervention_id": 0})
+        doc = create_document(
+            db_session, {"nom": "d1", "chemin": path, "intervention_id": 0}
+        )
         assert doc is not None
     except Exception:
         # service may enforce FK; accept that

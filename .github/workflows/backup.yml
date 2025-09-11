@@ -1,0 +1,49 @@
+name: Database Backup
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pg8000  # PostgreSQL driver for Python
+
+      - name: Create backup directory
+        run: mkdir -p backups
+
+      - name: Run database backup
+        env:
+          PGHOST: ${{ secrets.DB_HOST }}
+          PGUSER: ${{ secrets.DB_USER }}
+          PGPASSWORD: ${{ secrets.DB_PASSWORD }}
+          PGDATABASE: ${{ secrets.DB_NAME }}
+        run: |
+          TIMESTAMP=$(date +"%Y-%m-%d_%H-%M")
+          pg_dump -h $PGHOST -U $PGUSER -d $PGDATABASE | gzip > backups/erp_${TIMESTAMP}.sql.gz
+
+      - name: Clean old backups
+        run: |
+          find backups -name "*.sql.gz" -mtime +14 -delete
+
+      - name: Upload backup to storage
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-backup
+          path: backups/
+          retention-days: 30

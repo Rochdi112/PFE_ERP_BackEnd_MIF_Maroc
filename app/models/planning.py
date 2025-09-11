@@ -1,23 +1,36 @@
-
 """
-Modèle Planning : gestion des cycles de maintenance préventive et planification opérationnelle.
+Modèle Planning : gestion des cycles de maintenance préventive et
+planification opérationnelle.
 Relations : 1:N avec Equipement, liens potentiels avec Interventions futures.
-Exemple : utilisé pour générer automatiquement les interventions préventives, détecter les retards, optimiser la charge.
+Exemple : utilisé pour générer automatiquement les interventions préventives,
+détecter les retards, optimiser la charge.
 """
 
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum, Index, Boolean
-from sqlalchemy.orm import relationship
-from datetime import datetime, timedelta
-from app.db.database import Base
-from typing import TYPE_CHECKING, Optional, Dict, Any
 import enum
+from datetime import datetime, timedelta
+from typing import TYPE_CHECKING, Any, Dict, Optional
+
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+)
+from sqlalchemy.orm import relationship
+
+from app.db.database import Base
 
 if TYPE_CHECKING:
     from .equipement import Equipement
-    from .intervention import Intervention
+
 
 class FrequencePlanning(str, enum.Enum):
     """Fréquence de maintenance planifiée."""
+
     journalier = "journalier"
     hebdomadaire = "hebdomadaire"
     mensuel = "mensuel"
@@ -25,52 +38,76 @@ class FrequencePlanning(str, enum.Enum):
     semestriel = "semestriel"
     annuel = "annuel"
 
+
 class StatutPlanning(str, enum.Enum):
     """Statut du planning de maintenance."""
+
     actif = "actif"
     suspendu = "suspendu"
     termine = "termine"
     en_retard = "en_retard"
 
+
 class Planning(Base):
     """
     Modèle Planning - Orchestration de la maintenance préventive.
-    
+
     - Définit la fréquence, les dates clés, le statut du cycle de maintenance
     - Lié à un équipement industriel (1:N)
     - Permet la génération automatique d'interventions préventives
     - Sert à détecter les retards et optimiser la planification
-    
+
     Relations :
     - N:1 avec Equipement (patrimoine technique)
     - (Futur) 1:N avec Interventions générées
     """
+
     __tablename__ = "plannings"
     # Autorise les annotations non-Mapped legacy (compat SQLAlchemy 2.0)
     __allow_unmapped__ = True
     __table_args__ = (
-        Index('idx_planning_equipement_frequence', 'equipement_id', 'frequence'),
-        Index('idx_planning_statut_prochaine', 'statut', 'prochaine_date'),
+        Index("idx_planning_equipement_frequence", "equipement_id", "frequence"),
+        Index("idx_planning_statut_prochaine", "statut", "prochaine_date"),
     )
 
     id = Column(Integer, primary_key=True, index=True)
     frequence = Column(Enum(FrequencePlanning), nullable=False, index=True)
     prochaine_date = Column(DateTime, nullable=True, index=True)
     derniere_date = Column(DateTime, nullable=True)
-    statut = Column(Enum(StatutPlanning), default=StatutPlanning.actif, nullable=False, index=True)
+    statut = Column(
+        Enum(StatutPlanning), default=StatutPlanning.actif, nullable=False, index=True
+    )
     commentaire = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True, nullable=False, index=True)
-    date_creation = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
-    date_modification = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    date_creation = Column(
+        DateTime, default=datetime.utcnow, nullable=False, index=True
+    )
+    date_modification = Column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
 
-    equipement_id = Column(Integer, ForeignKey("equipements.id", ondelete="CASCADE"), nullable=False, index=True)
-    equipement: "Equipement" = relationship("Equipement", back_populates="plannings", lazy="select")
+    equipement_id = Column(
+        Integer,
+        ForeignKey("equipements.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    equipement: "Equipement" = relationship(
+        "Equipement", back_populates="plannings", lazy="select"
+    )
 
-    # NOTE: Préparé pour extension future (lien direct avec interventions générées)
-    # interventions = relationship("Intervention", back_populates="planning", lazy="dynamic")
+    # NOTE: Préparé pour extension future (lien direct avec
+    # interventions générées)
+    # interventions = relationship("Intervention", back_populates="planning",
+    # lazy="dynamic")
 
     def __repr__(self) -> str:
-        return f"<Planning(id={self.id}, equipement_id={self.equipement_id}, frequence='{self.frequence.value}', statut='{self.statut.value}')>"
+        return (
+            f"<Planning(id={self.id}, "
+            f"equipement_id={self.equipement_id}, "
+            f"frequence='{self.frequence.value}', "
+            f"statut='{self.statut.value}')>"
+        )
 
     # Propriétés calculées
     @property
@@ -142,28 +179,46 @@ class Planning(Base):
         self.date_modification = datetime.utcnow()
 
     # Sérialisation harmonisée
-    def to_dict(self, include_sensitive: bool = False, include_relations: bool = False) -> Dict[str, Any]:
+    def to_dict(
+        self, include_sensitive: bool = False, include_relations: bool = False
+    ) -> Dict[str, Any]:
         data = {
             "id": self.id,
             "frequence": self.frequence.value,
             "statut": self.statut.value,
-            "prochaine_date": self.prochaine_date.isoformat() if self.prochaine_date else None,
-            "derniere_date": self.derniere_date.isoformat() if self.derniere_date else None,
+            "prochaine_date": (
+                self.prochaine_date.isoformat() if self.prochaine_date else None
+            ),
+            "derniere_date": (
+                self.derniere_date.isoformat() if self.derniere_date else None
+            ),
             "equipement_id": self.equipement_id,
             "equipement_nom": self.equipement_nom,
             "est_en_retard": self.est_en_retard,
             "jours_retard": self.jours_retard,
             "prochaine_frequence_label": self.prochaine_frequence_label,
             "is_active": self.is_active,
-            "date_creation": self.date_creation.isoformat() if self.date_creation else None,
+            "date_creation": (
+                self.date_creation.isoformat() if self.date_creation else None
+            ),
         }
         if include_sensitive:
-            data.update({
-                "date_modification": self.date_modification.isoformat() if self.date_modification else None,
-                "commentaire": self.commentaire,
-            })
+            data.update(
+                {
+                    "date_modification": (
+                        self.date_modification.isoformat()
+                        if self.date_modification
+                        else None
+                    ),
+                    "commentaire": self.commentaire,
+                }
+            )
         if include_relations:
-            data.update({
-                "equipement": self.equipement.to_dict() if self.equipement else None,
-            })
+            data.update(
+                {
+                    "equipement": (
+                        self.equipement.to_dict() if self.equipement else None
+                    ),
+                }
+            )
         return data

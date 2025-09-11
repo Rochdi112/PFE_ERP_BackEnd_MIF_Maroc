@@ -1,10 +1,12 @@
 # app/services/technicien_service.py
 
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
-from app.models.technicien import Technicien, Competence, DisponibiliteTechnicien
+
+from app.models.technicien import Competence, DisponibiliteTechnicien, Technicien
 from app.models.user import User, UserRole
-from app.schemas.technicien import TechnicienCreate, CompetenceCreate
+from app.schemas.technicien import CompetenceCreate, TechnicienCreate
+
 
 def create_technicien(db: Session, data: TechnicienCreate) -> Technicien:
     """
@@ -16,7 +18,9 @@ def create_technicien(db: Session, data: TechnicienCreate) -> Technicien:
     if not user:
         raise HTTPException(status_code=404, detail="Utilisateur lié introuvable")
     if user.role != UserRole.technicien:
-        raise HTTPException(status_code=400, detail="L'utilisateur n’est pas un technicien")
+        raise HTTPException(
+            status_code=400, detail="L'utilisateur n’est pas un technicien"
+        )
 
     dispo_value = data.disponibilite
     if isinstance(dispo_value, str):
@@ -27,23 +31,24 @@ def create_technicien(db: Session, data: TechnicienCreate) -> Technicien:
         except Exception:
             dispo_value = DisponibiliteTechnicien.disponible
     technicien = Technicien(
-        user_id=data.user_id,
-        equipe=data.equipe,
-        disponibilite=dispo_value
+        user_id=data.user_id, equipe=data.equipe, disponibilite=dispo_value
     )
 
     if data.competences_ids:
-        competences = db.query(Competence).filter(
-            Competence.id.in_(data.competences_ids)
-        ).all()
+        competences = (
+            db.query(Competence).filter(Competence.id.in_(data.competences_ids)).all()
+        )
         if len(competences) != len(data.competences_ids):
-            raise HTTPException(status_code=404, detail="Une ou plusieurs compétences sont introuvables")
+            raise HTTPException(
+                status_code=404, detail="Une ou plusieurs compétences sont introuvables"
+            )
         technicien.competences = competences
 
     db.add(technicien)
     db.commit()
     db.refresh(technicien)
     return technicien
+
 
 def get_technicien_by_id(db: Session, technicien_id: int) -> Technicien:
     """
@@ -54,11 +59,13 @@ def get_technicien_by_id(db: Session, technicien_id: int) -> Technicien:
         raise HTTPException(status_code=404, detail="Technicien introuvable")
     return technicien
 
+
 def get_all_techniciens(db: Session) -> list[Technicien]:
     """
     Retourne la liste complète des techniciens.
     """
     return db.query(Technicien).all()
+
 
 def create_competence(db: Session, data: CompetenceCreate) -> Competence:
     """
@@ -74,6 +81,7 @@ def create_competence(db: Session, data: CompetenceCreate) -> Competence:
     db.commit()
     db.refresh(competence)
     return competence
+
 
 def get_all_competences(db: Session) -> list[Competence]:
     """
