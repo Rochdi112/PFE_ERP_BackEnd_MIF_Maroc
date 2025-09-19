@@ -1,0 +1,154 @@
+# Ruff configuration for ERP MIF Maroc Backend
+
+# Configuration générale
+target-version = "py311"
+line-length = 88
+indent-width = 4
+
+# Répertoires à inclure/exclure
+include = ["*.py", "*.pyi", "**/pyproject.toml"]
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "migrations",
+    "alembic/versions",
+]
+
+[lint]
+# Règles activées
+select = [
+    # Erreurs Python (pycodestyle)
+    "E",
+    # Avertissements Python (pycodestyle) 
+    "W",
+    # pyflakes
+    "F",
+    # isort
+    "I",
+    # pep8-naming
+    "N",
+    # pydocstyle
+    "D",
+    # pyupgrade
+    "UP",
+    # flake8-2020
+    "YTT",
+    # flake8-bandit
+    "S",
+    # flake8-bugbear
+    "B",
+    # flake8-builtins
+    "A",
+    # flake8-comprehensions
+    "C4",
+    # flake8-debugger
+    "T10",
+    # flake8-simplify
+    "SIM",
+    # flake8-unused-arguments
+    "ARG",
+    # flake8-use-pathlib
+    "PTH",
+    # Ruff-specific rules
+    "RUF",
+]
+
+# Règles ignorées
+ignore = [
+    # Ligne trop longue (géré par black)
+    "E501",
+    # Docstring manquante dans __init__
+    "D107",
+    # Docstring trop courte
+    "D200",
+    # Première ligne docstring doit se terminer par un point
+    "D415",
+    # Docstring manquante dans méthode publique (trop strict pour API)
+    "D102",
+    # Self/cls pas utilisé (faux positifs avec décorateurs)
+    "ARG002",
+    # Utilisation de `assert` (utilisé dans tests)
+    "S101",
+    # Utilisation de subprocess avec shell=True (justifié si besoin)
+    "S602",
+    # Hardcoded password (faux positifs)
+    "S105", "S106",
+]
+
+# Règles par fichier
+[lint.per-file-ignores]
+"tests/*" = [
+    # Assertions dans les tests
+    "S101",
+    # Docstrings non requises dans les tests
+    "D100", "D101", "D102", "D103",
+    # Variables unused dans fixtures
+    "ARG001",
+]
+"scripts/*" = [
+    # Scripts peuvent avoir des docstrings simplifiées
+    "D100", "D101",
+    # Print statements OK dans scripts
+    "T201",
+]
+"alembic/*" = ["ALL"]
+"*/migrations/*" = ["ALL"]
+
+[lint.mccabe]
+# Complexité cyclomatique maximale
+max-complexity = 10
+
+[lint.pydocstyle]
+# Convention de docstring
+convention = "google"
+
+[lint.isort]
+# Configuration isort
+force-single-line = false
+force-sort-within-sections = true
+lines-after-imports = 2
+known-first-party = ["app"]
+known-third-party = [
+    "fastapi", 
+    "sqlalchemy", 
+    "pydantic", 
+    "alembic",
+    "pytest",
+    "redis",
+    "celery",
+    "opentelemetry"
+]
+section-order = [
+    "future", 
+    "standard-library", 
+    "third-party", 
+    "first-party", 
+    "local-folder"
+]
+
+[lint.flake8-builtins]
+# Noms de builtins à éviter
+builtins-ignorelist = ["id", "type", "input", "filter", "map"]
+
+[lint.flake8-quotes]
+# Style de quotes
+docstring-quotes = "double"
+inline-quotes = "double"
+
+[format]
+# Configuration du formateur
+quote-style = "double"
+indent-style = "space"
+skip-source-first-line = false
+line-ending = "auto"
+
+# Respecter la magic trailing comma de Black
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
