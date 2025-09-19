@@ -1,57 +1,128 @@
-# Multi-stage Dockerfile for Production
+# Dockerfile.prod - Multi-stage optimized production build
+
+# =============================================================================
+# Builder Stage - Dependencies and compilation
+# =============================================================================
 FROM python:3.11-slim as builder
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Labels pour traçabilité
+LABEL maintainer="ERP MIF Maroc Team"
+LABEL description="Backend ERP - Builder Stage"
+
+# Variables d'environnement pour optimisation
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Outils système pour compilation
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     gcc \
+    g++ \
     postgresql-client \
-    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Set work directory
+# Copier les fichiers de configuration des dépendances
 WORKDIR /app
+COPY requirements.txt ./
 
-# Install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir --user -r requirements.txt
+# Créer environnement virtuel et installer dépendances
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-# Production stage
-FROM python:3.11-slim
+# Installer les dépendances Python
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt && \
+    pip install gunicorn[gevent]==21.2.0
 
-# Install runtime dependencies only
-RUN apt-get update && apt-get install -y \
-    postgresql-client \
+# =============================================================================
+# Runtime Stage - Image finale optimisée
+# =============================================================================
+FROM python:3.11-slim as runtime
+
+# Labels OCI pour métadonnées
+LABEL org.opencontainers.image.title="ERP MIF Maroc Backend"
+LABEL org.opencontainers.image.description="Backend API pour gestion interventions industrielles"
+LABEL org.opencontainers.image.version="1.0.0"
+LABEL org.opencontainers.image.vendor="MIF Maroc"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.source="https://github.com/Rochdi112/PFE_ERP_BackEnd_MIF_Maroc"
+
+# Variables d'environnement de production
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/opt/venv/bin:$PATH" \
+    ENVIRONMENT=production \
+    DEBUG=false
+
+# Créer utilisateur non-root pour sécurité
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# Installer dépendances système runtime uniquement
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    ca-certificates \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# Create non-root user
-RUN useradd --create-home --shell /bin/bash app \
-    && mkdir -p /app \
-    && chown -R app:app /app
+# Copier l'environnement virtuel depuis le builder
+COPY --from=builder /opt/venv /opt/venv
 
-# Set work directory
+# Créer structure de dossiers
 WORKDIR /app
+RUN mkdir -p logs static/uploads keys \
+    && chown -R appuser:appuser /app
 
-# Copy Python packages from builder
-COPY --from=builder /root/.local /home/app/.local
-ENV PATH=/home/app/.local/bin:$PATH
+# Copier le code source
+COPY --chown=appuser:appuser app/ ./app/
+COPY --chown=appuser:appuser alembic.ini ./
+COPY --chown=appuser:appuser scripts/ ./scripts/
+COPY --chown=appuser:appuser templates/ ./templates/
 
-# Copy application code
-COPY --chown=app:app . .
+# Copier les fichiers de configuration
+COPY --chown=appuser:appuser .env.production.template ./.env.example
 
-# Create necessary directories
-RUN mkdir -p /app/static/uploads /app/logs \
-    && chown -R app:app /app/static /app/logs
+# Générer les clés JWT si nécessaire (en production, utiliser des secrets externes)
+USER appuser
+RUN python scripts/generate_jwt_keys.py || echo "JWT keys generation skipped"
 
-# Switch to non-root user
-USER app
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+# Healthcheck intégré
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Expose port
+# Exposition du port
 EXPOSE 8000
 
-# Start application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+# Configuration Gunicorn optimisée pour production
+ENV GUNICORN_WORKERS=4 \
+    GUNICORN_WORKER_CLASS=gevent \
+    GUNICORN_WORKER_CONNECTIONS=1000 \
+    GUNICORN_MAX_REQUESTS=1000 \
+    GUNICORN_MAX_REQUESTS_JITTER=100 \
+    GUNICORN_TIMEOUT=30 \
+    GUNICORN_KEEPALIVE=5
+
+# Script d'entrée pour initialisation
+COPY --chown=appuser:appuser docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
+
+# Point d'entrée
+ENTRYPOINT ["./docker-entrypoint.sh"]
+
+# Commande par défaut
+CMD ["gunicorn", \
+     "--bind", "0.0.0.0:8000", \
+     "--workers", "4", \
+     "--worker-class", "gevent", \
+     "--worker-connections", "1000", \
+     "--max-requests", "1000", \
+     "--max-requests-jitter", "100", \
+     "--timeout", "30", \
+     "--keep-alive", "5", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-", \
+     "--log-level", "info", \
+     "--preload", \
+     "app.main:app"]

@@ -43,5 +43,14 @@ isort                       # Tri des imports
 flake8                      # Linter
 coverage                    # Mesure de couverture de code
 
+# --- Observabilité & Tracing ---
+opentelemetry-api           # OpenTelemetry API
+opentelemetry-sdk           # OpenTelemetry SDK
+opentelemetry-instrumentation-fastapi  # FastAPI auto-instrumentation
+opentelemetry-instrumentation-sqlalchemy  # SQLAlchemy instrumentation
+opentelemetry-instrumentation-requests    # Requests instrumentation
+opentelemetry-exporter-otlp # OTLP exporter
+prometheus-client           # Prometheus metrics client
+
 # --- Divers & utilitaires ---
 python-dotenv               # Pour charger .env facilement
