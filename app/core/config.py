@@ -44,6 +44,22 @@ class Settings(BaseSettings):
             "http://localhost:8000",
         ]
     )
+    CORS_ALLOW_METHODS: List[str] = Field(
+        default_factory=lambda: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+    )
+    CORS_ALLOW_HEADERS: List[str] = Field(
+        default_factory=lambda: [
+            "Authorization",
+            "Content-Type",
+            "Accept",
+            "Origin",
+            "X-Requested-With",
+        ]
+    )
+    CORS_EXPOSE_HEADERS: List[str] = Field(
+        default_factory=lambda: ["X-Request-ID"]
+    )
+    CORS_ALLOW_CREDENTIALS: bool = Field(default=True)
 
     # Scheduler toggle
     ENABLE_SCHEDULER: bool = Field(default=False)

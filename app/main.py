@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from app.api.middleware import CorrelationIdMiddleware, register_exception_handlers
 from app.core.config import settings
 from app.core.logging import get_logger, setup_logging
 
@@ -66,14 +67,24 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+if not settings.DEBUG and "*" in settings.CORS_ALLOW_ORIGINS:
+    raise ValueError(
+        "CORS_ALLOW_ORIGINS ne doit pas contenir '*' en production. Configurez des origines explicites."
+    )
+
 # Configuration CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ALLOW_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=settings.CORS_ALLOW_CREDENTIALS,
+    allow_methods=settings.CORS_ALLOW_METHODS,
+    allow_headers=settings.CORS_ALLOW_HEADERS,
+    expose_headers=settings.CORS_EXPOSE_HEADERS,
 )
+
+# Gestion uniformisée des erreurs et identifiant de corrélation
+app.add_middleware(CorrelationIdMiddleware)
+register_exception_handlers(app)
 
 # Rate limiting middleware
 if not settings.DEBUG:  # Only in production

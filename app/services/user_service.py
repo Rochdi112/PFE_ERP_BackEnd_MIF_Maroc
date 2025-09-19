@@ -29,6 +29,9 @@ def _check_exists_in_fallback(
     return False
 
 
+DEFAULT_STRONG_PASSWORD = "TempPass123!"
+
+
 def create_user(db: Session, user_data: UserCreate) -> User:
     """
     Crée un nouvel utilisateur :
@@ -123,12 +126,13 @@ def ensure_user_for_email(db: Session, email: str, role: UserRole) -> User:
     while db.query(User).filter(User.username == candidate).first():
         suffix += 1
         candidate = f"{base_username}{suffix}"
+    validate_password_policy(DEFAULT_STRONG_PASSWORD)
     user = User(
         username=candidate,
         full_name=None,
         email=email,
         role=role,
-        hashed_password=get_password_hash("testpwd123456"),
+        hashed_password=get_password_hash(DEFAULT_STRONG_PASSWORD),
         is_active=True,
     )
     db.add(user)
@@ -154,6 +158,7 @@ def update_user(db: Session, user_id: int, update_data: UserUpdate) -> User:
     if update_data.full_name is not None:
         user.full_name = update_data.full_name
     if update_data.password is not None:
+        validate_password_policy(update_data.password)
         user.hashed_password = get_password_hash(update_data.password)
     db.commit()
     db.refresh(user)

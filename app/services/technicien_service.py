@@ -60,11 +60,19 @@ def get_technicien_by_id(db: Session, technicien_id: int) -> Technicien:
     return technicien
 
 
-def get_all_techniciens(db: Session) -> list[Technicien]:
+def get_all_techniciens(
+    db: Session, *, limit: int = 50, offset: int = 0
+) -> list[Technicien]:
     """
-    Retourne la liste complète des techniciens.
+    Retourne la liste paginée des techniciens.
     """
-    return db.query(Technicien).all()
+    return (
+        db.query(Technicien)
+        .order_by(Technicien.id)
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
 
 
 def create_competence(db: Session, data: CompetenceCreate) -> Competence:

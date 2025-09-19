@@ -2,7 +2,7 @@
 
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.rbac import (
@@ -52,12 +52,15 @@ def create_new_technicien(
     summary="Lister les techniciens",
 )
 def list_techniciens(
-    db: Session = Depends(get_db), user: dict = Depends(get_current_user)
+    db: Session = Depends(get_db),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    user: dict = Depends(get_current_user),
 ):
     """
     Liste tous les techniciens.
     """
-    return get_all_techniciens(db)
+    return get_all_techniciens(db, limit=limit, offset=offset)
 
 
 @router.post(

@@ -26,7 +26,7 @@ def test_create_notification_non_email(monkeypatch):
 
     # create user
     u = User(
-        username="u1", email="u1@example.com", hashed_password=get_password_hash("password123!"), role=UserRole.client
+        username="u1", email="u1@example.com", hashed_password=get_password_hash("Password123!"), role=UserRole.client
     )
     db.add(u)
     db.commit()

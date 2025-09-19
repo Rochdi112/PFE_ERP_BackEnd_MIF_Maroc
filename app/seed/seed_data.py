@@ -39,7 +39,7 @@ def seed_all(db: Session):
         username="admin",
         full_name="Admin MIF",
         role=UserRole.admin,
-        hashed_password=get_password_hash("admin123"),
+        hashed_password=get_password_hash("Admin12345!"),
         is_active=True,
     )
 
@@ -49,7 +49,7 @@ def seed_all(db: Session):
         username="responsable",
         full_name="Responsable MIF",
         role=UserRole.responsable,
-        hashed_password=get_password_hash("responsable123"),
+        hashed_password=get_password_hash("Responsable123!"),
         is_active=True,
     )
 
@@ -61,7 +61,7 @@ def seed_all(db: Session):
             username=email.split("@")[0],
             full_name=fake.name(),
             role=UserRole.responsable,
-            hashed_password=get_password_hash("responsable123"),
+            hashed_password=get_password_hash("Responsable123!"),
             is_active=True,
         )
         responsables.append(user)
@@ -74,7 +74,7 @@ def seed_all(db: Session):
             username=email.split("@")[0],
             full_name=fake.name(),
             role=UserRole.technicien,
-            hashed_password=get_password_hash("tech123"),
+            hashed_password=get_password_hash("Tech12345!"),
             is_active=True,
         )
         # ensure a Technicien row exists for this user
@@ -99,7 +99,7 @@ def seed_all(db: Session):
             full_name=fake.name(),
             email=email,
             role=UserRole.client,
-            hashed_password=get_password_hash("client123"),
+            hashed_password=get_password_hash("Client1234!"),
             is_active=True,
         )
         db.add(user)
