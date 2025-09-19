@@ -1,5 +1,6 @@
 # app/core/config.py
 
+import os
 from typing import List
 
 from pydantic import Field
@@ -10,14 +11,24 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "ERP Interventions"
     API_V1_STR: str = "/api/v1"
 
-    # Security
-    SECRET_KEY: str = Field(default="insecure-test-secret-key")
-    ALGORITHM: str = "HS256"
+    # Security - JWT
+    SECRET_KEY: str = Field(default="insecure-test-secret-key")  # Fallback for HS256
+    JWT_ALGORITHM: str = Field(default="RS256")  # RS256 pour production, HS256 pour tests
     ACCESS_TOKEN_EXPIRE_MINUTES: int = (
         15  # durée de validité JWT en minutes (15min pour Go-Prod sécurité)
     )
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7  # durée de validité des refresh tokens
+    
+    # JWT RSA Keys (production)
+    JWT_PRIVATE_KEY_PATH: str = Field(default="")
+    JWT_PUBLIC_KEY_PATH: str = Field(default="")
+    
+    # Legacy algorithm support
+    ALGORITHM: str = "HS256"  # Backward compatibility
+    
+    # Encryption
     FILES_ENC_KEY: str = Field(default="")  # clé Fernet pour chiffrement des documents
+    FERNET_KEYS: str = Field(default="")  # Multiple keys for rotation: key1,key2,key3
 
     # Email SMTP
     SMTP_HOST: str = Field(default="localhost")
@@ -77,6 +88,28 @@ class Settings(BaseSettings):
             f"postgresql+psycopg2://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
             f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
+    
+    def get_jwt_private_key(self) -> str:
+        """Charge la clé privée JWT depuis le fichier ou retourne SECRET_KEY."""
+        if self.JWT_PRIVATE_KEY_PATH and os.path.exists(self.JWT_PRIVATE_KEY_PATH):
+            with open(self.JWT_PRIVATE_KEY_PATH, 'r') as f:
+                return f.read()
+        return self.SECRET_KEY
+    
+    def get_jwt_public_key(self) -> str:
+        """Charge la clé publique JWT depuis le fichier ou retourne SECRET_KEY."""
+        if self.JWT_PUBLIC_KEY_PATH and os.path.exists(self.JWT_PUBLIC_KEY_PATH):
+            with open(self.JWT_PUBLIC_KEY_PATH, 'r') as f:
+                return f.read()
+        return self.SECRET_KEY
+    
+    def get_fernet_keys(self) -> list:
+        """Retourne la liste des clés Fernet pour rotation."""
+        if self.FERNET_KEYS:
+            return [key.strip() for key in self.FERNET_KEYS.split(',') if key.strip()]
+        elif self.FILES_ENC_KEY:
+            return [self.FILES_ENC_KEY]
+        return []
 
     # Pydantic v2 settings configuration
     model_config = SettingsConfigDict(

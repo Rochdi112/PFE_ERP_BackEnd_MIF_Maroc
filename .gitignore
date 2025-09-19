@@ -236,3 +236,6 @@ tests/
 # Development
 .development
 .dev
+# Security keys (production secrets)
+keys/
+*.pem

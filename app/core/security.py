@@ -1,5 +1,6 @@
 # app/core/security.py
 
+import os
 from datetime import datetime, timedelta
 
 from fastapi import Depends, HTTPException, status
@@ -49,21 +50,34 @@ def validate_password_policy(password: str) -> None:
 
 
 def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
-    """Crée un token JWT d'accès avec expiration"""
+    """Crée un token JWT d'accès avec expiration (RSA ou HMAC selon config)"""
     to_encode = data.copy()
     expire = datetime.utcnow() + (
         expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    
+    # Utiliser RSA si les clés sont disponibles, sinon fallback HMAC
+    if settings.JWT_ALGORITHM == "RS256" and settings.JWT_PRIVATE_KEY_PATH and os.path.exists(settings.JWT_PRIVATE_KEY_PATH):
+        private_key = settings.get_jwt_private_key()
+        return jwt.encode(to_encode, private_key, algorithm="RS256")
+    else:
+        # Fallback HMAC pour compatibilité/tests
+        return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
 def verify_token(token: str) -> dict:
-    """Vérifie et décode un token JWT"""
+    """Vérifie et décode un token JWT (RSA ou HMAC selon config)"""
     try:
-        payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
-        )
+        # Essayer RSA d'abord si configuré
+        if settings.JWT_ALGORITHM == "RS256" and settings.JWT_PUBLIC_KEY_PATH and os.path.exists(settings.JWT_PUBLIC_KEY_PATH):
+            public_key = settings.get_jwt_public_key()
+            payload = jwt.decode(token, public_key, algorithms=["RS256"])
+        else:
+            # Fallback HMAC
+            payload = jwt.decode(
+                token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+            )
         return payload
     except JWTError:
         raise HTTPException(
