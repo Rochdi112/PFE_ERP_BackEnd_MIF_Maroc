@@ -4,6 +4,7 @@ import sys
 from typing import Generator
 
 from sqlalchemy import create_engine
+from sqlalchemy.exc import NoSuchModuleError, OperationalError
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 from sqlalchemy.pool import StaticPool
 
@@ -34,13 +35,10 @@ def _create_default_engine():
 
     try:
         eng = create_engine(DATABASE_URL)
-        # Probe la connexion; si indisponible, fallback SQLite
-        with eng.connect() as _:
-            pass
-        return eng
-    except Exception as exc:  # Driver manquant ou DB non accessible
+    except (NoSuchModuleError, ModuleNotFoundError, ImportError) as exc:
         print(
-            "Creation de l'engine Postgres echouee, fallback SQLite memoire: "
+            "Creation de l'engine Postgres impossible (driver manquant), "
+            "fallback SQLite memoire: "
             f"{getattr(exc, 'msg', str(exc))}"
         )
         return create_engine(
@@ -48,6 +46,31 @@ def _create_default_engine():
             connect_args={"check_same_thread": False},
             poolclass=StaticPool,
         )
+    except Exception as exc:
+        # Toute autre erreur de création doit être remontée pour faciliter le debug
+        print(
+            "Creation de l'engine Postgres impossible: "
+            f"{getattr(exc, 'msg', str(exc))}"
+        )
+        raise
+
+    # Vérifie la connectivité sans casser l'initialisation : en cas d'échec on
+    # conserve tout de même l'engine Postgres afin que l'erreur se produise lors
+    # de l'utilisation effective (comportement attendu par plusieurs tests).
+    try:
+        with eng.connect() as _:
+            pass
+    except OperationalError as exc:
+        print(
+            "Connexion PostgreSQL indisponible (engine conservé): "
+            f"{getattr(exc, 'orig', exc)}"
+        )
+    except Exception as exc:
+        print(
+            "Verification de l'engine Postgres échouée (engine conservé): "
+            f"{getattr(exc, 'msg', str(exc))}"
+        )
+    return eng
 
 
 engine = _create_default_engine()
