@@ -147,7 +147,7 @@ try:
     app.include_router(dashboard.router, prefix=api_prefix)
     app.include_router(health.router, prefix=api_prefix)
     # Backward-compatible mounts at root for existing tests/tools
-    # app.include_router(auth.router)
+    app.include_router(auth.router)
     app.include_router(users.router)
     app.include_router(techniciens.router)
     app.include_router(equipements.router)
