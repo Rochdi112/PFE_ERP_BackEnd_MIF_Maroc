@@ -53,47 +53,59 @@ def get_current_user(
     if user_id is not None:
         try:
             user_obj = get_user_by_id(db, int(user_id))
+        except HTTPException as exc:
+            if exc.status_code != status.HTTP_404_NOT_FOUND:
+                raise
+        except (TypeError, ValueError):
+            user_obj = None
         except Exception:
             user_obj = None
-    elif sub is not None:
+
+    if user_obj is None and sub is not None:
+        sub_str = str(sub)
         # Essaye d'interpréter sub comme id numérique, sinon email
         try:
-            numeric_id = int(str(sub))
-            user_obj = get_user_by_id(db, numeric_id)
-        except Exception:
-            # sinon, tente par email
+            numeric_id = int(sub_str)
+        except (TypeError, ValueError):
+            numeric_id = None
+        if numeric_id is not None:
             try:
-                user_obj = get_user_by_email(db, str(sub))
+                user_obj = get_user_by_id(db, numeric_id)
+            except HTTPException as exc:
+                if exc.status_code != status.HTTP_404_NOT_FOUND:
+                    raise
+            except Exception:
+                user_obj = None
+        if user_obj is None:
+            try:
+                user_obj = get_user_by_email(db, sub_str)
             except Exception:
                 user_obj = None
 
-    if user_obj is not None:
-        if not getattr(user_obj, "is_active", True):
-            raise HTTPException(status_code=403, detail="Utilisateur désactivé")
-        # Normalise en dict pour compatibilité des routeurs existants
-        return {
-            "user_id": getattr(user_obj, "id", None),
-            "email": getattr(user_obj, "email", None),
-            "role": getattr(user_obj, "role", role),
-            "is_active": True,
-        }
+    if user_obj is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Utilisateur introuvable ou inactif",
+        )
 
-    # Fallback: retourne un objet léger suffisant pour RBAC
-    # Fournit .role, .is_active, .id (si déductible), .email (si présent)
-    fallback_id = None
-    try:
-        if user_id is not None:
-            fallback_id = int(user_id)
-        elif sub is not None and str(sub).isdigit():
-            fallback_id = int(str(sub))
-    except Exception:
-        fallback_id = None
+    if not getattr(user_obj, "is_active", True):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Utilisateur introuvable ou inactif",
+        )
 
+    role_value = getattr(user_obj, "role", None)
+    if hasattr(role_value, "value"):
+        role_value = role_value.value
+    if role_value is None:
+        role_value = role
+
+    # Normalise en dict pour compatibilité des routeurs existants
     return {
-        "user_id": fallback_id,
-        "email": sub if isinstance(sub, str) else None,
-        "role": role,
-        "is_active": True,
+        "user_id": getattr(user_obj, "id", None),
+        "email": getattr(user_obj, "email", None),
+        "role": role_value,
+        "is_active": getattr(user_obj, "is_active", True),
     }
 
 
