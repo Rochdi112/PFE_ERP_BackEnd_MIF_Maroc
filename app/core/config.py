@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = Field(default="insecure-test-secret-key")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = (
-        480  # durée de validité JWT en minutes (8 heures pour faciliter les tests)
+        15  # durée de validité JWT en minutes (15min pour Go-Prod sécurité)
     )
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7  # durée de validité des refresh tokens
     FILES_ENC_KEY: str = Field(default="")  # clé Fernet pour chiffrement des documents
@@ -64,7 +64,8 @@ class Settings(BaseSettings):
     # Scheduler toggle
     ENABLE_SCHEDULER: bool = Field(default=False)
 
-    # Debug mode
+    # Environment 
+    ENVIRONMENT: str = Field(default="development")  # development, production
     DEBUG: bool = Field(default=False)
 
     # Logging

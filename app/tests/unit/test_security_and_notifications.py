@@ -86,4 +86,6 @@ def test_send_email_smtp_failure():
         mock_smtplib.SMTP.return_value = mock_smtp_instance
 
         with pytest.raises(HTTPException):
-            send_email_notification("to@example.com", dummy, env_param=mock_env_instance)
+            send_email_notification(
+                "to@example.com", dummy, env_param=mock_env_instance
+            )
