@@ -62,16 +62,25 @@ test-cov:
 # 🎨 Vérification de la qualité du code
 lint:
 	@echo "🎨 Vérification de la qualité du code..."
+	ruff check .
 	black --check app/
 	isort --check-only app/
-	flake8 app/ --max-line-length=88 --extend-ignore=E203,W503
+	mypy app/ --ignore-missing-imports --no-strict-optional || true
 
 # ✨ Formatage automatique du code
 format:
 	@echo "✨ Formatage du code..."
 	black app/
 	isort app/
+	ruff check --fix .
 	@echo "✅ Code formaté"
+
+# 🔒 Vérifications de sécurité
+security:
+	@echo "🔒 Vérifications de sécurité..."
+	bandit -r app/ -f txt || true
+	safety check || true
+	@echo "✅ Vérifications de sécurité terminées"
 
 # 📊 Génération de rapport complet
 report:

@@ -54,6 +54,7 @@ from .notification import Notification
 
 # Modèles planification et organisation
 from .planning import Planning
+from .refresh_token import RefreshToken
 
 # Modèles reporting et business intelligence
 from .report import Report, ReportFormat, ReportSchedule, ReportStatus, ReportType
@@ -72,7 +73,6 @@ from .technicien import (
 
 # Modèles utilisateurs et authentification
 from .user import User, UserRole
-from .refresh_token import RefreshToken
 
 # Export des classes principales pour utilisation externe
 __all__ = [

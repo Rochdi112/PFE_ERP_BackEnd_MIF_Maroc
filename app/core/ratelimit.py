@@ -1,9 +1,10 @@
 # app/core/ratelimit.py
 
+from collections import defaultdict
+from time import time
+
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
-from time import time
-from collections import defaultdict
 
 WINDOW = 60  # fenêtre en secondes
 LIMIT = 120  # requêtes par fenêtre

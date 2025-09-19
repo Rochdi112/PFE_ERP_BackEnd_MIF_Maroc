@@ -19,9 +19,9 @@ def test_send_email_template_missing_raises(monkeypatch):
         def get_template(self, name):
             raise Exception("not found")
 
-    from app.services import notification_service as ns
-
     from fastapi import HTTPException
+
+    from app.services import notification_service as ns
 
     monkeypatch.setattr(ns, "env", DummyEnv())
     with pytest.raises(HTTPException):

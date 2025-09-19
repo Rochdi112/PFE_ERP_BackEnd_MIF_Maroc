@@ -109,17 +109,14 @@ def seed_all(db: Session):
     competence_labels = ["mécanique", "électrique", "hydraulique"]
     domaine_mapping = {
         "mécanique": "Mécanique",
-        "électrique": "Électricité", 
-        "hydraulique": "Hydraulique"
+        "électrique": "Électricité",
+        "hydraulique": "Hydraulique",
     }
     for nom in competence_labels:
         # avoid duplicate insertion on re-seed
         existing_comp = db.query(Competence).filter_by(nom=nom).first()
         if not existing_comp:
-            db.add(Competence(
-                nom=nom,
-                domaine=domaine_mapping.get(nom, "General")
-            ))
+            db.add(Competence(nom=nom, domaine=domaine_mapping.get(nom, "General")))
 
     # --- ÉQUIPEMENTS ---
     equipements = []

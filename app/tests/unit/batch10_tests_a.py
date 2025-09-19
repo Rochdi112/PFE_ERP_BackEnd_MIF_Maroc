@@ -2,8 +2,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.core.security import get_password_hash
 from app.api.v1 import documents as documents_router
+from app.core.security import get_password_hash
 from app.db import database
 from app.models.document import Document
 from app.models.intervention import Intervention, InterventionType

@@ -1,5 +1,6 @@
 # app/core/security.py
 
+import os
 from datetime import datetime, timedelta
 
 from fastapi import Depends, HTTPException, status
@@ -31,49 +32,52 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def validate_password_policy(password: str) -> None:
-    """Valide la politique de mot de passe"""
-
-    missing_requirements: list[str] = []
-
-    if len(password) < MIN_PASSWORD_LENGTH:
-        missing_requirements.append(
-            f"au moins {MIN_PASSWORD_LENGTH} caractères"
-        )
-    if password.lower() == password:
-        missing_requirements.append("une lettre majuscule")
-    if password.upper() == password:
-        missing_requirements.append("une lettre minuscule")
-    if not any(char.isdigit() for char in password):
-        missing_requirements.append("un chiffre")
-    if not any(char in ALLOWED_SYMBOLS for char in password):
-        missing_requirements.append(
-            f"un symbole parmi {ALLOWED_SYMBOLS}"
-        )
-
-    if missing_requirements:
-        requirements = ", ".join(missing_requirements)
+    """
+    Valide la politique de mot de passe selon les critères OWASP Go-Prod.
+    
+    Raises:
+        HTTPException: Si le mot de passe ne respecte pas la politique
+    """
+    from app.core.password_policy import validate_password_strength
+    
+    errors = validate_password_strength(password)
+    if errors:
+        error_message = "Mot de passe invalide: " + "; ".join(errors)
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Le mot de passe doit contenir {requirements}.",
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail=error_message
         )
 
 
 def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
-    """Crée un token JWT d'accès avec expiration"""
+    """Crée un token JWT d'accès avec expiration (RSA ou HMAC selon config)"""
     to_encode = data.copy()
     expire = datetime.utcnow() + (
         expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    
+    # Utiliser RSA si les clés sont disponibles, sinon fallback HMAC
+    if settings.JWT_ALGORITHM == "RS256" and settings.JWT_PRIVATE_KEY_PATH and os.path.exists(settings.JWT_PRIVATE_KEY_PATH):
+        private_key = settings.get_jwt_private_key()
+        return jwt.encode(to_encode, private_key, algorithm="RS256")
+    else:
+        # Fallback HMAC pour compatibilité/tests
+        return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
 def verify_token(token: str) -> dict:
-    """Vérifie et décode un token JWT"""
+    """Vérifie et décode un token JWT (RSA ou HMAC selon config)"""
     try:
-        payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
-        )
+        # Essayer RSA d'abord si configuré
+        if settings.JWT_ALGORITHM == "RS256" and settings.JWT_PUBLIC_KEY_PATH and os.path.exists(settings.JWT_PUBLIC_KEY_PATH):
+            public_key = settings.get_jwt_public_key()
+            payload = jwt.decode(token, public_key, algorithms=["RS256"])
+        else:
+            # Fallback HMAC
+            payload = jwt.decode(
+                token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+            )
         return payload
     except JWTError:
         raise HTTPException(

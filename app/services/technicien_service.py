@@ -67,11 +67,7 @@ def get_all_techniciens(
     Retourne la liste paginée des techniciens.
     """
     return (
-        db.query(Technicien)
-        .order_by(Technicien.id)
-        .offset(offset)
-        .limit(limit)
-        .all()
+        db.query(Technicien).order_by(Technicien.id).offset(offset).limit(limit).all()
     )
 
 

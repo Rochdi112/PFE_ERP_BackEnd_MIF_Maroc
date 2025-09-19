@@ -1,17 +1,16 @@
 # app/services/notification_service.py
 
+import smtplib
 import sys
 from datetime import datetime
 
 from fastapi import HTTPException
 from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 from sqlalchemy.orm import Session
-import smtplib
 
 from app.models.notification import Notification
 from app.models.user import User
 from app.schemas.notification import NotificationCreate
-
 
 # Configuration des templates Jinja
 env = Environment(loader=FileSystemLoader("app/templates"))
@@ -35,14 +34,11 @@ def send_email_notification(email_to: str, notification: Notification, env_param
 
         # Rendu du template
         template = env_param.get_template(template_name)
-        html_content = template.render(
-            notification=notification,
-            recipient=email_to
-        )
+        html_content = template.render(notification=notification, recipient=email_to)
 
         # Envoi de l'email (simulation pour les tests)
         print(f"Email envoyé à {email_to} avec template {template_name}")
-        
+
         # Simuler l'envoi SMTP pour les tests
         # Ces appels SMTP peuvent être mockés dans les tests
         server = smtplib.SMTP("smtp.example.com", 587)
@@ -52,10 +48,7 @@ def send_email_notification(email_to: str, notification: Notification, env_param
         server.quit()
 
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Échec d'envoi d'email: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Échec d'envoi d'email: {str(e)}")
 
 
 def create_notification(db: Session, data: NotificationCreate) -> Notification:
