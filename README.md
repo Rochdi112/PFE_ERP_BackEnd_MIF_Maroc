@@ -570,6 +570,10 @@ The system implements role-based access control:
 - **Responsable**: Technician and equipment management
 - **Admin**: Full system access
 
+#### Immediate RBAC Enforcement
+
+- Every authenticated request resolves the user from the database before granting access. If an operator deactivates an account or downgrades its role, any previously issued token for that user immediately yields **HTTP 403** and the client must re-authenticate. Plan administrative procedures accordingly (forced logout/refresh when adjusting roles).
+
 ### Security Best Practices
 
 - ✅ **Hashed passwords** with bcrypt + strong policy (≥10 chars, mixed case, numbers, symbols)

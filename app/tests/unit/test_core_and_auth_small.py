@@ -76,10 +76,10 @@ def test_get_current_user_fallback(monkeypatch):
     monkeypatch.setattr(
         "app.core.rbac.decode_token", lambda token: {"sub": "42", "role": "responsable"}
     )
-    # Use a DummyDB that returns no user so get_current_user falls back
-    user = get_current_user(token="t", db=DummyDB())
-    assert user["role"] == "responsable"
-    assert user["user_id"] == 42
+    # Use a DummyDB that returns no user -> should now raise 403 instead of returning fallback
+    with pytest.raises(HTTPException) as exc:
+        get_current_user(token="t", db=DummyDB())
+    assert exc.value.status_code == 403
 
 
 # auth_service error paths

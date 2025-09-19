@@ -1,3 +1,6 @@
+import pytest
+from fastapi import HTTPException
+
 from app.core.security import create_access_token
 
 
@@ -10,10 +13,9 @@ def test_decode_token_and_get_current_user_fallback(db_session):
 
     # call get_current_user dependency function directly by providing token and db
     # get_current_user is a callable; call it directly with token and db
-    user = get_current_user(token=token, db=db_session)
-    # Should return a dict with role
-    assert isinstance(user, dict)
-    assert user.get("role") == "technicien"
+    with pytest.raises(HTTPException) as exc:
+        get_current_user(token=token, db=db_session)
+    assert exc.value.status_code == 403
 
 
 def test_require_roles_allows_and_denies():

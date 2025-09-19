@@ -8,10 +8,10 @@ def test_get_my_profile_missing_user(client):
 
 
 def test_update_my_profile_not_found(client):
-    # create a JWT for a non-existent user and attempt update -> should return 404
+    # create a JWT for a non-existent user and attempt update -> should return 403
     from app.core.security import create_access_token
 
     fake_token = create_access_token({"sub": "ghost@example.com", "role": "client", "user_id": 9999})
     payload = {"full_name": "No One"}
     r = client.put("/users/update", json=payload, headers={"Authorization": f"Bearer {fake_token}"})
-    assert r.status_code == 404
+    assert r.status_code == 403
