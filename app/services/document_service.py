@@ -18,6 +18,7 @@ if settings.FILES_ENC_KEY:
 else:
     # Clé de développement - NE PAS UTILISER EN PRODUCTION
     from cryptography.fernet import Fernet
+
     fernet = Fernet(Fernet.generate_key())
 
 

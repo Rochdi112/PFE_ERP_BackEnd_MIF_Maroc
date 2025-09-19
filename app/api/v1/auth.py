@@ -57,17 +57,13 @@ def login_username(
     return authenticate_user_by_username(db, username, password)
 
 
-
-
 @router.post(
     "/refresh",
     response_model=TokenResponse,
     summary="Rafraîchir les tokens",
     description="Échange un refresh token valide contre de nouveaux tokens.",
 )
-def refresh_token(
-    refresh_token: str = Form(...), db: Session = Depends(get_db)
-):
+def refresh_token(refresh_token: str = Form(...), db: Session = Depends(get_db)):
     """
     Échange un refresh token contre de nouveaux access et refresh tokens.
     Le refresh token est marqué comme rotated.
@@ -75,11 +71,13 @@ def refresh_token(
     new_refresh = rotate_refresh_token(db, refresh_token)
     # Pour créer l'access token, on doit récupérer l'utilisateur
     from app.models.refresh_token import RefreshToken
+
     rt = db.query(RefreshToken).filter_by(token=refresh_token).first()
     if not rt:
         from fastapi import HTTPException
+
         raise HTTPException(status_code=401, detail="Token invalide")
-    
+
     user = rt.user
     access = create_access_token(
         data={
@@ -88,7 +86,9 @@ def refresh_token(
             "user_id": user.id,
         }
     )
-    return TokenResponse(access_token=access, refresh_token=new_refresh, token_type="bearer")
+    return TokenResponse(
+        access_token=access, refresh_token=new_refresh, token_type="bearer"
+    )
 
 
 @router.post(
@@ -96,9 +96,7 @@ def refresh_token(
     summary="Déconnexion utilisateur",
     description="Révoque tous les refresh tokens de l'utilisateur connecté.",
 )
-def logout(
-    current_user=Depends(get_current_user), db: Session = Depends(get_db)
-):
+def logout(current_user=Depends(get_current_user), db: Session = Depends(get_db)):
     """
     Révoque tous les refresh tokens de l'utilisateur pour le déconnecter.
     """

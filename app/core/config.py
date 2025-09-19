@@ -13,7 +13,9 @@ class Settings(BaseSettings):
     # Security
     SECRET_KEY: str = Field(default="insecure-test-secret-key")
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 480  # durée de validité JWT en minutes (8 heures pour faciliter les tests)
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = (
+        480  # durée de validité JWT en minutes (8 heures pour faciliter les tests)
+    )
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7  # durée de validité des refresh tokens
     FILES_ENC_KEY: str = Field(default="")  # clé Fernet pour chiffrement des documents
 
@@ -56,9 +58,7 @@ class Settings(BaseSettings):
             "X-Requested-With",
         ]
     )
-    CORS_EXPOSE_HEADERS: List[str] = Field(
-        default_factory=lambda: ["X-Request-ID"]
-    )
+    CORS_EXPOSE_HEADERS: List[str] = Field(default_factory=lambda: ["X-Request-ID"])
     CORS_ALLOW_CREDENTIALS: bool = Field(default=True)
 
     # Scheduler toggle

@@ -89,6 +89,7 @@ register_exception_handlers(app)
 # Rate limiting middleware
 if not settings.DEBUG:  # Only in production
     from app.core.ratelimit import RateLimitMiddleware
+
     app.add_middleware(RateLimitMiddleware)
 
 # We want /static to point to the parent of the uploads dir so that

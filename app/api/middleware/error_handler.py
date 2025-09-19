@@ -102,7 +102,9 @@ async def validation_exception_handler(
 
 async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     trace_id = _ensure_trace_id(request)
-    _LOGGER.exception("Unhandled application error", exc_info=exc, extra={"trace_id": trace_id})
+    _LOGGER.exception(
+        "Unhandled application error", exc_info=exc, extra={"trace_id": trace_id}
+    )
     payload = _build_error_payload(
         code="INTERNAL_SERVER_ERROR",
         message="Une erreur interne est survenue.",

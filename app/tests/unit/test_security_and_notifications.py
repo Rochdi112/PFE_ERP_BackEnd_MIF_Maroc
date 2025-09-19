@@ -40,6 +40,7 @@ def test_verify_token_invalid():
 def test_send_email_template_not_found():
     # Test that HTTPException is raised when template is not found
     from jinja2 import TemplateNotFound
+
     from app.services.notification_service import send_email_notification
 
     mock_env_instance = MagicMock()

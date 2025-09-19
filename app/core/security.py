@@ -36,9 +36,7 @@ def validate_password_policy(password: str) -> None:
     missing_requirements: list[str] = []
 
     if len(password) < MIN_PASSWORD_LENGTH:
-        missing_requirements.append(
-            f"au moins {MIN_PASSWORD_LENGTH} caractères"
-        )
+        missing_requirements.append(f"au moins {MIN_PASSWORD_LENGTH} caractères")
     if password.lower() == password:
         missing_requirements.append("une lettre majuscule")
     if password.upper() == password:
@@ -46,9 +44,7 @@ def validate_password_policy(password: str) -> None:
     if not any(char.isdigit() for char in password):
         missing_requirements.append("un chiffre")
     if not any(char in ALLOWED_SYMBOLS for char in password):
-        missing_requirements.append(
-            f"un symbole parmi {ALLOWED_SYMBOLS}"
-        )
+        missing_requirements.append(f"un symbole parmi {ALLOWED_SYMBOLS}")
 
     if missing_requirements:
         requirements = ", ".join(missing_requirements)

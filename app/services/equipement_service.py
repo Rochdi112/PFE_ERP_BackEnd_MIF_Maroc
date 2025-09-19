@@ -37,11 +37,7 @@ def get_all_equipements(
     db: Session, *, limit: int = 50, offset: int = 0
 ) -> list[Equipement]:
     return (
-        db.query(Equipement)
-        .order_by(Equipement.id)
-        .offset(offset)
-        .limit(limit)
-        .all()
+        db.query(Equipement).order_by(Equipement.id).offset(offset).limit(limit).all()
     )
 
 
@@ -49,14 +45,11 @@ def delete_equipement(db: Session, equipement_id: int) -> None:
     equipement = get_equipement_by_id(db, equipement_id)
     # Protection: empêcher la suppression si des interventions existent
     # (intégrité métier)
-    intervention_exists = (
-        db.query(
-            db.query(Intervention)
-            .filter(Intervention.equipement_id == equipement_id)
-            .exists()
-        )
-        .scalar()
-    )
+    intervention_exists = db.query(
+        db.query(Intervention)
+        .filter(Intervention.equipement_id == equipement_id)
+        .exists()
+    ).scalar()
 
     if intervention_exists:
         raise HTTPException(

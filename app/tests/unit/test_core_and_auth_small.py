@@ -2,13 +2,13 @@ import pytest
 from fastapi import HTTPException
 from jose import JWTError
 
-from app.core.security import get_password_hash
 from app.core.exceptions import (
     CredentialsException,
     NotFoundException,
     PermissionDeniedException,
 )
 from app.core.rbac import decode_token, get_current_user
+from app.core.security import get_password_hash
 from app.services import auth_service
 
 

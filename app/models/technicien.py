@@ -135,9 +135,7 @@ class Competence(Base):
         String(100), nullable=False, index=True
     )  # Ex: Électricité, Mécanique, IT
     description = Column(Text, nullable=True)
-    niveau_requis_minimum = Column(
-        String(20), default="intermediaire", nullable=False
-    )
+    niveau_requis_minimum = Column(String(20), default="intermediaire", nullable=False)
 
     # Métadonnées et validation
     is_active = Column(Boolean, default=True, nullable=False)
