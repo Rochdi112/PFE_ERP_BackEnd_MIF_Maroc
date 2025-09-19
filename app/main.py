@@ -9,6 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.api.middleware import CorrelationIdMiddleware, register_exception_handlers
+from app.api.middleware.observability import ObservabilityMiddleware, set_observability_middleware
+from app.core.tracing import initialize_tracing, shutdown_tracing
 from app.core.config import settings
 from app.core.logging import get_logger, setup_logging
 
@@ -32,8 +34,12 @@ except Exception:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    print(f"🚀 {settings.PROJECT_NAME} démarré!")
-    print("📚 Documentation disponible sur: http://localhost:8000/docs")
+    logger.info(f"🚀 {settings.PROJECT_NAME} démarré!")
+    logger.info("📚 Documentation disponible sur: http://localhost:8000/docs")
+    
+    # Initialiser le tracing OpenTelemetry
+    initialize_tracing(app)
+    
     # Start scheduler if enabled
     if getattr(settings, "ENABLE_SCHEDULER", False) and scheduler:
         try:
@@ -43,9 +49,9 @@ async def lifespan(app: FastAPI):
                     run_planning_generation, "interval", hours=1, id="planning_job"
                 )
             scheduler.start()
-            print("⏱️ Scheduler started")
+            logger.info("⏱️ Scheduler started")
         except Exception as e:
-            print(f"⚠️ Scheduler not started: {e}")
+            logger.warning(f"⚠️ Scheduler not started: {e}")
     try:
         yield
     finally:
@@ -53,10 +59,14 @@ async def lifespan(app: FastAPI):
         if getattr(settings, "ENABLE_SCHEDULER", False) and scheduler:
             try:
                 scheduler.shutdown(wait=False)
-                print("⏹️ Scheduler stopped")
+                logger.info("⏹️ Scheduler stopped")
             except Exception:
                 pass
-        print("👋 Arrêt de l'application...")
+        
+        # Fermer le tracing
+        shutdown_tracing()
+        
+        logger.info("👋 Arrêt de l'application...")
 
 
 # Création de l'application FastAPI avec gestionnaire de cycle de vie
@@ -82,8 +92,11 @@ app.add_middleware(
     expose_headers=settings.CORS_EXPOSE_HEADERS,
 )
 
-# Gestion uniformisée des erreurs et identifiant de corrélation
-app.add_middleware(CorrelationIdMiddleware)
+# Gestion uniformisée des erreurs et observabilité
+observability_middleware = ObservabilityMiddleware(app)
+app.add_middleware(ObservabilityMiddleware)
+set_observability_middleware(observability_middleware)
+
 register_exception_handlers(app)
 
 # Rate limiting middleware
