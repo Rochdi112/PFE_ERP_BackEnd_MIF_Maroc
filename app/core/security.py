@@ -17,14 +17,7 @@ security = HTTPBearer()
 
 # Constantes pour la politique de mot de passe
 ALLOWED_SYMBOLS = "!@#$%^&*()-_+=[]{};:,.?/|"
-# ``ALLOWED_SYMBOLS`` is kept for projects that still need to enforce
-# additional constraints at a higher level.  The previous implementation
-# required a very strict policy (minimum 10 characters with mixed case, digits
-# and symbols).  A handful of integration tests interact with the API using
-# deliberately simple credentials to validate role/permission flows.  To keep
-# those scenarios working while still avoiding extremely weak passwords we only
-# enforce a minimal length requirement here.
-MIN_PASSWORD_LENGTH = 6
+MIN_PASSWORD_LENGTH = 10
 
 
 def get_password_hash(password: str) -> str:
@@ -39,15 +32,30 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def validate_password_policy(password: str) -> None:
     """Valide la politique de mot de passe"""
+
+    missing_requirements: list[str] = []
+
     if len(password) < MIN_PASSWORD_LENGTH:
+        missing_requirements.append(
+            f"au moins {MIN_PASSWORD_LENGTH} caractères"
+        )
+    if password.lower() == password:
+        missing_requirements.append("une lettre majuscule")
+    if password.upper() == password:
+        missing_requirements.append("une lettre minuscule")
+    if not any(char.isdigit() for char in password):
+        missing_requirements.append("un chiffre")
+    if not any(char in ALLOWED_SYMBOLS for char in password):
+        missing_requirements.append(
+            f"un symbole parmi {ALLOWED_SYMBOLS}"
+        )
+
+    if missing_requirements:
+        requirements = ", ".join(missing_requirements)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Mot de passe trop court (minimum {MIN_PASSWORD_LENGTH} caractères)"
+            detail=f"Le mot de passe doit contenir {requirements}.",
         )
-    # Additional complexity checks (mixed case, digits, symbols) were intentionally
-    # removed.  They caused legitimate API tests to fail when creating fixtures
-    # with simple passwords.  Projects needing stricter rules can extend this
-    # helper or perform validation before invoking it.
 
 
 def create_access_token(data: dict, expires_delta: timedelta = None) -> str:

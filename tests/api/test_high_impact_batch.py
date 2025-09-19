@@ -8,7 +8,7 @@ def test_get_my_profile_and_update(client, db_session):
     from app.schemas.user import UserCreate, UserRole
     from app.core.security import create_access_token
 
-    admin_data = UserCreate(username="apiadmin", full_name="API Admin", email="apiadmin@example.com", role=UserRole.admin, password="secret123456!")
+    admin_data = UserCreate(username="apiadmin", full_name="API Admin", email="apiadmin@example.com", role=UserRole.admin, password="Secret123456!")
     try:
         admin = create_user(db_session, admin_data)
     except Exception:

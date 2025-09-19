@@ -8,10 +8,18 @@ from app.core import security
 
 
 def test_password_hash_and_verify():
-    pw = "secret123"
+    pw = "Secret123!"
     h = security.get_password_hash(pw)
     assert isinstance(h, str) and h != pw
     assert security.verify_password(pw, h)
+
+
+def test_password_policy_enforces_complexity():
+    with pytest.raises(HTTPException):
+        security.validate_password_policy("weakpass")
+
+    # Should not raise
+    security.validate_password_policy("Complexe123!")
 
 
 def test_create_and_verify_token_roundtrip():

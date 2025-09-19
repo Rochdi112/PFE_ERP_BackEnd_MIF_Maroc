@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.exceptions import NotFoundException
 from app.models.equipement import Equipement
+from app.models.intervention import Intervention
 from app.schemas.equipement import EquipementCreate
 
 
@@ -32,23 +33,32 @@ def get_equipement_by_id(db: Session, equipement_id: int) -> Equipement:
     return equipement
 
 
-def get_all_equipements(db: Session) -> list[Equipement]:
-    return db.query(Equipement).all()
+def get_all_equipements(
+    db: Session, *, limit: int = 50, offset: int = 0
+) -> list[Equipement]:
+    return (
+        db.query(Equipement)
+        .order_by(Equipement.id)
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
 
 
 def delete_equipement(db: Session, equipement_id: int) -> None:
     equipement = get_equipement_by_id(db, equipement_id)
     # Protection: empêcher la suppression si des interventions existent
     # (intégrité métier)
-    count_interventions = 0
-    if hasattr(equipement, "interventions"):
-        try:
-            # relationship lazy="dynamic" -> count() ne charge pas toute la collection
-            count_interventions = equipement.interventions.count()
-        except Exception:
-            # Si le comptage échoue (p.ex. contexte non initialisé), on considère 0
-            count_interventions = 0
-    if count_interventions > 0:
+    intervention_exists = (
+        db.query(
+            db.query(Intervention)
+            .filter(Intervention.equipement_id == equipement_id)
+            .exists()
+        )
+        .scalar()
+    )
+
+    if intervention_exists:
         raise HTTPException(
             status_code=409, detail="Équipement utilisé par des interventions"
         )

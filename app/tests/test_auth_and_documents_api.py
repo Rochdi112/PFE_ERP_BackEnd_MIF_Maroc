@@ -15,7 +15,7 @@ def setup_test_user():
             full_name="API Admin",
             email="admin@example.com",
             role=UserRole.admin,
-            password="adminpass123!",
+            password="Adminpass123!",
         )
         try:
             create_user(db, data)

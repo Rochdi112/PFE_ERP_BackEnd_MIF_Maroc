@@ -57,7 +57,7 @@ def test_delete_document_file_removed(tmp_path, monkeypatch):
 
     # create user and intervention
     u = User(
-        username="u2", email="u2@example.com", hashed_password=get_password_hash("password123!"), role=UserRole.admin
+        username="u2", email="u2@example.com", hashed_password=get_password_hash("Password123!"), role=UserRole.admin
     )
     db.add(u)
     db.commit()

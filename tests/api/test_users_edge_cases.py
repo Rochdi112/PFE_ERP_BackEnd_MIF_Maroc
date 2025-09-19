@@ -5,6 +5,11 @@ def test_get_user_not_found(client, admin_token):
     # requesting a user id that doesn't exist should return 404
     r = client.get("/users/9999", headers={"Authorization": f"Bearer {admin_token}"})
     assert r.status_code == 404
+    payload = r.json()
+    assert payload["error"]["code"] == "RESOURCE_NOT_FOUND"
+    assert payload["error"]["message"]
+    assert payload["error"]["trace_id"]
+    assert "X-Request-ID" in r.headers
 
 
 def test_create_user_invalid_payload(client, admin_token):
@@ -12,6 +17,11 @@ def test_create_user_invalid_payload(client, admin_token):
     payload = {"email": "bad@example.com"}
     r = client.post("/users/", json=payload, headers={"Authorization": f"Bearer {admin_token}"})
     assert r.status_code == 422
+    body = r.json()
+    assert body["error"]["code"] == "VALIDATION_ERROR"
+    assert body["error"]["trace_id"]
+    assert isinstance(body["error"]["details"], list)
+    assert "X-Request-ID" in r.headers
 
 
 def test_deactivate_already_deactivated(client, admin_token, db_session):

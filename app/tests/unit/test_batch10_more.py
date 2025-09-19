@@ -105,7 +105,9 @@ def test_send_email_notification_success(monkeypatch):
 
 def test_get_all_techniciens_calls_db():
     db = MagicMock()
-    db.query.return_value.all.return_value = ["t1"]
+    db.query.return_value.order_by.return_value.offset.return_value.limit.return_value.all.return_value = [
+        "t1"
+    ]
     res = technicien_service.get_all_techniciens(db)
     assert res == ["t1"]
 

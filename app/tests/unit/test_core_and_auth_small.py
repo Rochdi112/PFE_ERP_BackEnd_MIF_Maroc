@@ -35,7 +35,7 @@ class DummyUser:
         self,
         id=1,
         email="u@example.com",
-        hashed_password=get_password_hash("password123!"),
+        hashed_password=get_password_hash("Password123!"),
         is_active=True,
         role="admin",
     ):

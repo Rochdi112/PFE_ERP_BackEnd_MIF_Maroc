@@ -4,7 +4,7 @@ def test_create_and_list_users_admin(client, admin_token):
         "full_name": "John Doe",
         "email": "jdoe@example.com",
         "role": "client",
-        "password": "secret"
+        "password": "Strongpass123!"
     }
     r = client.post("/users/", json=payload, headers={"Authorization": f"Bearer {admin_token}"})
     assert r.status_code == 201

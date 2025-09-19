@@ -15,7 +15,7 @@ def test_user_role_properties():
         username="u1",
         full_name="Full",
         email="u1@example.com",
-        hashed_password=get_password_hash("password123!"),
+        hashed_password=get_password_hash("Password123!"),
         role=UserRole.admin,
     )
     assert u.is_admin

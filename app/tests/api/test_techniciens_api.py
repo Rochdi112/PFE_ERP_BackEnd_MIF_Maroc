@@ -76,3 +76,34 @@ def test_create_and_list_competence(client, responsable_token):
     )
     assert r.status_code == 200
     assert any(c["nom"] == data["nom"] for c in r.json())
+
+
+def test_list_techniciens_pagination_window(client, responsable_token, db_session):
+    from uuid import uuid4
+
+    from app.schemas.technicien import TechnicienCreate
+    from app.schemas.user import UserRole
+    from app.services.technicien_service import create_technicien
+    from app.services.user_service import ensure_user_for_email
+
+    created_ids = []
+    for idx in range(3):
+        email = f"tech-pag-{idx}-{uuid4()}@example.com"
+        user = ensure_user_for_email(db_session, email=email, role=UserRole.technicien)
+        user.full_name = user.full_name or f"Technicien {idx}"
+        db_session.add(user)
+        db_session.commit()
+        db_session.refresh(user)
+        payload = TechnicienCreate(user_id=user.id, equipe="T", disponibilite="disponible")
+        technicien = create_technicien(db_session, payload)
+        created_ids.append(technicien.id)
+
+    r = client.get(
+        "/techniciens/?limit=2&offset=1",
+        headers={"Authorization": f"Bearer {responsable_token}"},
+    )
+    assert r.status_code == 200
+    data = r.json()
+    assert len(data) <= 2
+    returned_ids = {item["id"] for item in data}
+    assert returned_ids.issubset(set(created_ids))

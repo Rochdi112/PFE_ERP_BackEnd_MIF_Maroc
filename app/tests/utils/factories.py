@@ -14,7 +14,7 @@ def create_admin(db):
                 full_name="Admin F",
                 email="adminf@example.com",
                 role=UserRole.admin,
-                password="adminpass123!",
+                password="Adminpass123!",
             ),
         )
     except Exception:

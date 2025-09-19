@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.core.rbac import responsable_required
@@ -41,11 +41,15 @@ def create_new_equipement(
     response_model=List[EquipementOut],
     summary="Lister les équipements",
 )
-def list_equipements(db: Session = Depends(get_db)):
+def list_equipements(
+    db: Session = Depends(get_db),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+):
     """
     Liste tous les équipements.
     """
-    return get_all_equipements(db)
+    return get_all_equipements(db, limit=limit, offset=offset)
 
 
 @router.get(

@@ -64,7 +64,7 @@ def test_update_deactivate_reactivate(monkeypatch):
     u = User(
         username="x",
         email="x@example.com",
-        hashed_password=get_password_hash("password123!"),
+        hashed_password=get_password_hash("Password123!"),
         role=UserRole.client,
     )
     db.add(u)
@@ -76,7 +76,7 @@ def test_update_deactivate_reactivate(monkeypatch):
 
     ud = UD()
     ud.full_name = "New Name"
-    ud.password = "newpw"
+    ud.password = "Newpassword123!"
 
     # capture old hash before update
     old_hash = u.hashed_password
